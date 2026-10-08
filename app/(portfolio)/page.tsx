@@ -4,12 +4,12 @@ export default function PortfolioPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "Suryansh | AI Developer & Student Portfolio",
+    "name": "dsuryansh | AI Developer & Student Portfolio",
     "url": process.env.NEXT_PUBLIC_APP_URL || "https://localhost:3000",
-    "description": "Personal portfolio of Suryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
+    "description": "Personal portfolio of dsuryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
     "publisher": {
       "@type": "Person",
-      "name": "Suryansh Kumar",
+      "name": "dsuryansh Kumar",
       "url": process.env.NEXT_PUBLIC_APP_URL || "https://localhost:3000",
       "jobTitle": "Student & AI Developer",
       "sameAs": [

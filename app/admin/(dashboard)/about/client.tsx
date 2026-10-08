@@ -7,7 +7,7 @@ import { Reorder } from "framer-motion"
 
 export default function AboutClient({ initialData }: { initialData: any }) {
   const [title, setTitle] = useState(initialData?.title || "About Me")
-  const [paragraphs, setParagraphs] = useState<string[]>(initialData?.paragraphs || ["Hi, I'm Suryansh..."])
+  const [paragraphs, setParagraphs] = useState<string[]>(initialData?.paragraphs || ["Hi, I'm dsuryansh..."])
   const [saving, setSaving] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 

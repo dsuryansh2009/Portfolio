@@ -15,15 +15,15 @@ import { getApprovedScribblesAction } from "@/app/actions/scribble";
 
 export default function BlogClient() {
   const [displayedPosts, setDisplayedPosts] = useState<MicroPost[]>([]);
-  const [activeTab, setActiveTab] = useState<"visitor" | "suryansh">("suryansh");
+  const [activeTab, setActiveTab] = useState<"visitor" | "dsuryansh">("dsuryansh");
   const [isLoading, setIsLoading] = useState(true);
   
   // Easter egg admin state
-  const [suryanshClicks, setSuryanshClicks] = useState(0);
+  const [dsuryanshClicks, setdsuryanshClicks] = useState(0);
 
   const [scribbles, setScribbles] = useState<any[]>([]);
 
-  const fetchPosts = async (tab: "visitor" | "suryansh") => {
+  const fetchPosts = async (tab: "visitor" | "dsuryansh") => {
     setIsLoading(true);
     try {
       const posts = await getPosts(tab);
@@ -52,10 +52,10 @@ export default function BlogClient() {
     await fetchPosts(activeTab);
   };
 
-  const handleSuryanshClick = () => {
-    setActiveTab("suryansh");
-    setSuryanshClicks((prev) => prev + 1);
-    if (suryanshClicks >= 4) {
+  const handledsuryanshClick = () => {
+    setActiveTab("dsuryansh");
+    setdsuryanshClicks((prev) => prev + 1);
+    if (dsuryanshClicks >= 4) {
       window.location.href = "/admin";
     }
   };
@@ -64,7 +64,7 @@ export default function BlogClient() {
 
   return (
     <main className="min-h-screen w-full bg-[#050505] text-white selection:bg-[#84b897] selection:text-black pb-32">
-      <h1 className="sr-only">Suryansh&apos;s Blog & Thoughts</h1>
+      <h1 className="sr-only">dsuryansh&apos;s Blog & Thoughts</h1>
       <Navbar />
       
       {/* Back Button */}
@@ -80,14 +80,14 @@ export default function BlogClient() {
         <div className="flex bg-white/5 p-1 rounded-full relative w-64 mx-auto mb-12">
           <motion.div 
             className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-[#84b897] rounded-full z-0"
-            animate={{ left: activeTab === "suryansh" ? "4px" : "calc(50%)" }}
+            animate={{ left: activeTab === "dsuryansh" ? "4px" : "calc(50%)" }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           />
           <button 
-            onClick={handleSuryanshClick}
-            className={`w-1/2 py-2 text-sm font-medium z-10 transition-colors ${activeTab === "suryansh" ? "text-black" : "text-white/50 hover:text-white"}`}
+            onClick={handledsuryanshClick}
+            className={`w-1/2 py-2 text-sm font-medium z-10 transition-colors ${activeTab === "dsuryansh" ? "text-black" : "text-white/50 hover:text-white"}`}
           >
-            Suryansh
+            dsuryansh
           </button>
           <button 
             onClick={() => setActiveTab("visitor")}

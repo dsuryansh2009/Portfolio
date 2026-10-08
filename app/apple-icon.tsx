@@ -21,7 +21,7 @@ export default function Icon() {
           fontWeight: "bold",
         }}
       >
-        S
+        d
       </div>
     ),
     { ...size }

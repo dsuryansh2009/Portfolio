@@ -32,29 +32,29 @@ const martel = Martel({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://localhost:3000"),
   title: {
-    default: "Suryansh | AI Developer & Student Portfolio",
-    template: "%s | Suryansh",
+    default: "dsuryansh",
+    template: "%s | dsuryansh",
   },
-  description: "Personal portfolio of Suryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
+  description: "Personal portfolio of dsuryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
   keywords: [
-    "dsuryansh", "dsuryansh portfolio", "Suryansh", "Suryansh portfolio", 
-    "Suryansh AI", "Suryansh developer", "AI developer India", 
-    "Student developer portfolio", "Suryansh Kumar"
+    "dsuryansh", "dsuryansh portfolio", "dsuryansh", "dsuryansh portfolio", 
+    "dsuryansh AI", "dsuryansh developer", "AI developer India", 
+    "Student developer portfolio", "dsuryansh Kumar"
   ],
-  authors: [{ name: "Suryansh Kumar", url: "https://localhost:3000" }],
-  creator: "Suryansh Kumar",
+  authors: [{ name: "dsuryansh Kumar", url: "https://localhost:3000" }],
+  creator: "dsuryansh Kumar",
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: "/",
-    title: "Suryansh | AI Developer & Student Portfolio",
-    description: "Personal portfolio of Suryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
-    siteName: "Suryansh Portfolio",
+    title: "dsuryansh",
+    description: "Personal portfolio of dsuryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
+    siteName: "dsuryansh",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Suryansh | AI Developer & Student Portfolio",
-    description: "Personal portfolio of Suryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
+    title: "dsuryansh",
+    description: "Personal portfolio of dsuryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
     creator: "@dsuryansh",
   },
   icons: {

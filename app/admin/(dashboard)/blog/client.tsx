@@ -45,7 +45,7 @@ export default function BlogClient({ initialPosts }: { initialPosts: any[] }) {
     if (!content.trim() && media.length === 0) return;
     await createPostAction({
       content: content.trim(),
-      authorName: "Suryansh",
+      authorName: "dsuryansh",
       media: media.length > 0 ? media : undefined
     })
     setContent("")

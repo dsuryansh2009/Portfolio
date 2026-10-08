@@ -2,9 +2,9 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Suryansh | AI Developer & Student Portfolio",
-    short_name: "Suryansh",
-    description: "Personal portfolio of Suryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
+    name: "dsuryansh",
+    short_name: "dsuryansh",
+    description: "Personal portfolio of dsuryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
     start_url: "/",
     display: "standalone",
     background_color: "#050505",

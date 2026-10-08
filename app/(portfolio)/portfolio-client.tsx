@@ -44,7 +44,7 @@ export default function PortfolioClient({ initialActiveFolder = null }: { initia
       if (data) {
         setAboutContent(data.paragraphs.join("\n\n"));
       } else {
-        setAboutContent(`Hi, I'm Suryansh a student from India with a deep curiosity for AI, technology, and building things that leave an impression.\n\nI come from a small town, but I've never believed that ambition is defined by where you start. While preparing for competitive exams in high school, I spend every spare moment exploring artificial intelligence, experimenting with new ideas, and turning them into projects and experiences.\n\nThis website is a collection of that journey—my work, my thoughts, and the things I'm learning along the way. It's not a showcase of perfection; it's a record of progress.\n\nThanks for stopping by. I hope you find something here that inspires you as much as creating it inspires me.`);
+        setAboutContent(`Hi, I'm dsuryansh a student from India with a deep curiosity for AI, technology, and building things that leave an impression.\n\nI come from a small town, but I've never believed that ambition is defined by where you start. While preparing for competitive exams in high school, I spend every spare moment exploring artificial intelligence, experimenting with new ideas, and turning them into projects and experiences.\n\nThis website is a collection of that journey—my work, my thoughts, and the things I'm learning along the way. It's not a showcase of perfection; it's a record of progress.\n\nThanks for stopping by. I hope you find something here that inspires you as much as creating it inspires me.`);
       }
     } catch (e) {
       console.error(e);
@@ -81,7 +81,7 @@ export default function PortfolioClient({ initialActiveFolder = null }: { initia
 
   return (
     <main className="h-screen w-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory bg-[#0A0710] scroll-smooth">
-      <h1 className="sr-only">Suryansh | AI Developer & Student Portfolio</h1>
+      <h1 className="sr-only">dsuryansh</h1>
       {!isFullyBlack && (
         <MosaicLens
           style={{
@@ -160,7 +160,7 @@ export default function PortfolioClient({ initialActiveFolder = null }: { initia
               blockColor="#1a1a1a"
               highlight={[
                 {
-                  text: "Suryansh",
+                  text: "dsuryansh",
                   block: true,
                   color: "#84b897",
                   rounded: 8,

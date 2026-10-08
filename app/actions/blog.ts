@@ -13,7 +13,7 @@ async function ensureSeedPosts() {
         data: {
           id: post.id,
           content: post.content,
-          authorName: post.authorName || "Suryansh", // Seed posts are typically by admin
+          authorName: post.authorName || "dsuryansh", // Seed posts are typically by admin
           createdAt: new Date(post.date),
           media: post.media ? (post.media as any) : undefined,
           link: post.link ? (post.link as any) : undefined,
@@ -23,12 +23,12 @@ async function ensureSeedPosts() {
   }
 }
 
-export async function getPosts(type: "visitor" | "suryansh") {
+export async function getPosts(type: "visitor" | "dsuryansh") {
   await ensureSeedPosts();
 
   const posts = await prisma.post.findMany({
     where: {
-      authorName: type === "suryansh" ? "Suryansh" : { not: "Suryansh" }
+      authorName: type === "dsuryansh" ? "dsuryansh" : { not: "dsuryansh" }
     },
     orderBy: { createdAt: "desc" },
   });

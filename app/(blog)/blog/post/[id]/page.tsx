@@ -31,7 +31,7 @@ export async function generateMetadata(
     title: `Post by ${post.authorName}`,
     description: excerpt,
     openGraph: {
-      title: `Post by ${post.authorName} | Suryansh`,
+      title: `Post by ${post.authorName} | dsuryansh`,
       description: excerpt,
       url: `/blog/post/${post.id}`,
       images: imageUrl ? [{ url: imageUrl }] : [],
@@ -41,7 +41,7 @@ export async function generateMetadata(
     },
     twitter: {
       card: imageUrl ? "summary_large_image" : "summary",
-      title: `Post by ${post.authorName} | Suryansh`,
+      title: `Post by ${post.authorName} | dsuryansh`,
       description: excerpt,
       images: imageUrl ? [imageUrl] : [],
     },

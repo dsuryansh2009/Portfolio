@@ -21,17 +21,17 @@ export async function generateMetadata(
 
   return {
     title: `${folder.name} | Gallery`,
-    description: folder.description || `View the ${folder.name} gallery by Suryansh.`,
+    description: folder.description || `View the ${folder.name} gallery by dsuryansh.`,
     openGraph: {
-      title: `${folder.name} | Gallery | Suryansh`,
-      description: folder.description || `View the ${folder.name} gallery by Suryansh.`,
+      title: `${folder.name} | Gallery | dsuryansh`,
+      description: folder.description || `View the ${folder.name} gallery by dsuryansh.`,
       url: `/gallery/${resolvedParams.slug}`,
       images: folder.images && folder.images.length > 0 ? [{ url: folder.images[0].imageUrl }] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${folder.name} | Gallery | Suryansh`,
-      description: folder.description || `View the ${folder.name} gallery by Suryansh.`,
+      title: `${folder.name} | Gallery | dsuryansh`,
+      description: folder.description || `View the ${folder.name} gallery by dsuryansh.`,
       images: folder.images && folder.images.length > 0 ? [folder.images[0].imageUrl] : [],
     },
   };

@@ -74,13 +74,13 @@ export default function MusicWidget() {
       {/* Hover Tooltip */}
       <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:-translate-y-1 transition-all duration-300 ease-out whitespace-nowrap z-50">
         <div className="bg-[#121614]/95 text-[#a3b3ac] border border-[#26332a] text-xs px-3 py-1.5 rounded-full shadow-xl backdrop-blur-md flex items-center gap-1.5">
-          <span>( suryansh music activity, also follow me on spotify 🥺 )</span>
+          <span>( dsuryansh music activity, also follow me on spotify 🥺 )</span>
         </div>
       </div>
 
       {/* Main Widget Card */}
       <div 
-        title="( suryansh music activity, also follow me on spotify 🥺 )"
+        title="( dsuryansh music activity, also follow me on spotify 🥺 )"
         className="flex items-center gap-4 bg-[#151a17] border border-[#26332a] p-3 pr-8 rounded-2xl shadow-2xl transition-all duration-300 group-hover/widget:border-[#84b897]/40 group-hover/widget:shadow-[0_0_30px_rgba(132,184,151,0.15)] group-hover/widget:-translate-y-1"
       >
         <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900 border border-white/5">

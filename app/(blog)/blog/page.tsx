@@ -4,10 +4,10 @@ import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Blog & Thoughts",
-  description: "Read the latest thoughts, updates, and articles by Suryansh.",
+  description: "Read the latest thoughts, updates, and articles by dsuryansh.",
   openGraph: {
-    title: "Blog & Thoughts | Suryansh",
-    description: "Read the latest thoughts, updates, and articles by Suryansh.",
+    title: "Blog & Thoughts | dsuryansh",
+    description: "Read the latest thoughts, updates, and articles by dsuryansh.",
     url: "/blog",
   },
   alternates: {
@@ -27,12 +27,12 @@ export default async function BlogPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    "name": "Suryansh's Blog",
+    "name": "dsuryansh's Blog",
     "url": `${appUrl}/blog`,
-    "description": "Read the latest thoughts, updates, and articles by Suryansh.",
+    "description": "Read the latest thoughts, updates, and articles by dsuryansh.",
     "publisher": {
       "@type": "Person",
-      "name": "Suryansh Kumar"
+      "name": "dsuryansh Kumar"
     },
     "blogPost": posts.map(post => ({
       "@type": "BlogPosting",

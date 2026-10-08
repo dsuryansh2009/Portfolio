@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Suryansh - AI Developer & Student Portfolio";
+export const alt = "dsuryansh - AI Developer & Student Portfolio";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -25,7 +25,7 @@ export default async function Image() {
         }}
       >
         <div style={{ display: "flex", color: "#84b897", fontSize: 100, fontWeight: "bold" }}>
-          Suryansh
+          dsuryansh
         </div>
         <div style={{ display: "flex", color: "#a3a3a3", fontSize: 40, letterSpacing: "-0.02em" }}>
           AI Developer & Student Portfolio
