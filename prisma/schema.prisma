@@ -1,0 +1,162 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id         String   @id @default(uuid())
+  content    String
+  authorName String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Storing media as JSON: [{ type: "image", url: "...", name: "..." }]
+  media Json?
+  // Storing link as JSON: { title: "...", url: "..." }
+  link  Json?
+
+  likes    Int @default(0)
+  dislikes Int @default(0)
+
+  comments Comment[]
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  text       String
+  authorName String   @default("Anonymous")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  likes    Int @default(0)
+  dislikes Int @default(0)
+
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+
+  @@index([postId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  tags        String[]
+  imageUrl    String
+  link        String?
+  github      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GalleryFolder {
+  id           String         @id @default(uuid())
+  name         String
+  slug         String         @unique
+  description  String?
+  coverImage   String?
+  displayOrder Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  images       GalleryImage[]
+}
+
+model GalleryImage {
+  id                 String        @id @default(uuid())
+  folderId           String
+  folder             GalleryFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  title              String?
+  description        String?
+  cloudinaryPublicId String
+  imageUrl           String
+  width              Int?
+  height             Int?
+  displayOrder       Int           @default(0)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([folderId])
+}
+
+// --- Auth.js Models ---
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- About Model ---
+model About {
+  id         String   @id @default(cuid())
+  title      String
+  paragraphs String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// --- Scribble Model ---
+model Scribble {
+  id         String   @id @default(cuid())
+  imageUrl   String
+  nickname   String   @default("Anonymous")
+  approved   Boolean  @default(false)
+  isFeatured Boolean  @default(false)
+  likes      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
