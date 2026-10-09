@@ -95,7 +95,7 @@ export default function PortfolioClient({
   };
 
   return (
-    <main className="h-screen w-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory bg-[#0A0710] scroll-smooth">
+    <main className="w-full bg-[#0A0710]">
       <h1 className="sr-only">dsuryansh</h1>
       {!isFullyBlack && (
         <MosaicLens
@@ -112,7 +112,7 @@ export default function PortfolioClient({
       )}
       
       {!isFullyBlack && (
-        <section className="relative z-10 flex h-screen w-full snap-start flex-col items-center justify-center">
+        <section className="relative z-10 flex h-screen w-full flex-col items-center justify-center">
           <h2 className="sr-only">Introduction</h2>
           <SparkleButton />
           <div className="absolute bottom-10 animate-bounce text-white/50">
@@ -125,7 +125,7 @@ export default function PortfolioClient({
       
       <section 
         id="home"
-        className={`relative z-10 flex h-screen w-full snap-start items-center justify-center p-8 transition-colors duration-1000 ${
+        className={`relative z-10 flex h-screen w-full items-center justify-center p-8 transition-colors duration-1000 ${
           isChatFinished ? "bg-black" : "bg-transparent"
         }`}
       >
@@ -158,7 +158,7 @@ export default function PortfolioClient({
 
       {/* About Section */}
       {isFullyBlack && (
-        <section id="about" className="relative z-10 flex min-h-screen w-full snap-start flex-col items-center justify-center bg-[#050505] px-8 md:px-24">
+        <section id="about" className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center bg-[#050505] px-8 md:px-24">
           <h2 className="sr-only">About Me</h2>
           <div className="w-full max-w-5xl mx-auto">
             <BlockTextReveal 
@@ -203,14 +203,14 @@ export default function PortfolioClient({
 
       {/* Projects Section */}
       {isFullyBlack && (
-        <section id="projects" className="relative z-10 w-full snap-start bg-[#000000]">
+        <section id="projects" className="relative z-10 w-full bg-[#000000]">
           <ProjectsShowcase projects={initialProjects} />
         </section>
       )}
 
       {/* Gallery / Viewer Section */}
       {isFullyBlack && (
-        <section id="gallery" className="relative z-10 flex min-h-screen w-full snap-start flex-col items-center justify-center bg-[#000000] px-8 md:px-24 overflow-hidden">
+        <section id="gallery" className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center bg-[#000000] px-8 md:px-24 overflow-hidden">
           <h2 className="sr-only">Gallery & Projects</h2>
           {activeFolder ? (
             <>

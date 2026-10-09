@@ -69,6 +69,9 @@ export const viewport = {
   themeColor: "#050505",
 };
 
+import SmoothScroll from "@/components/layout/smooth-scroll";
+import ScrollProgress from "@/components/common/scroll-progress";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -77,12 +80,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${lora.variable} ${martel.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${lora.variable} ${martel.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#050505]">
-        <GlobalEffects />
-        {children}
-        <Analytics />
+      <body className="bg-[#050505] overflow-x-hidden">
+        <SmoothScroll>
+          <ScrollProgress />
+          <GlobalEffects />
+          {children}
+          <Analytics />
+        </SmoothScroll>
       </body>
     </html>
   );

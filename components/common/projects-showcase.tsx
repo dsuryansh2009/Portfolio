@@ -12,19 +12,27 @@ const ProjectCard = ({ project, index }: { project: any; index: number }) => {
       className="group relative flex flex-col md:flex-row items-center gap-8 md:gap-16 w-full max-w-6xl mx-auto py-16 border-b border-white/5 last:border-0"
     >
       {/* Image Section */}
-      <div className="w-full md:w-1/2 overflow-hidden rounded-2xl relative aspect-[4/3] isolate">
+      <div 
+        className="w-full md:w-1/2 overflow-hidden rounded-2xl relative aspect-[4/3] isolate"
+        style={{ transform: 'translateZ(0)', clipPath: 'inset(0 round 1rem)' }}
+      >
         <CreaseFlyer
           images={[{ image: project.imageUrl }]}
           playback={{ play: "click", hold: 2.5, speed: 5, spin: 5 }}
           posterWidth={1024}
           posterHeight={768}
+          style={{ borderRadius: 'inherit' }}
         />
       </div>
 
       {/* Content Section */}
       <div className="w-full md:w-1/2 flex flex-col items-start text-left space-y-6">
         <div className="space-y-2">
-          <h3 className="text-3xl md:text-5xl font-medium tracking-tight text-white group-hover:text-[#84b897] transition-colors duration-500">
+          <h3 className={`text-3xl md:text-5xl font-medium tracking-tight text-white transition-colors duration-500 ${
+            project.title === "Neo Brutalist Web" 
+              ? "group-hover:text-[#b88484]" 
+              : "group-hover:text-[#84b897]"
+          }`}>
             {project.title}
           </h3>
         </div>
