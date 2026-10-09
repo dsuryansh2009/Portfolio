@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Lora, Martel } from "next/font/google";
 import "@/styles/globals.css";
 import GlobalEffects from "@/components/layout/global-effects";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -81,6 +82,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#050505]">
         <GlobalEffects />
         {children}
+        <Analytics />
       </body>
     </html>
   );
