@@ -34,7 +34,7 @@ const ProjectCard = ({ project, index }: { project: any; index: number }) => {
         </p>
 
         <div className="flex flex-wrap gap-2 pt-2">
-          {project.tags.map((tag) => (
+          {project.tags.map((tag: string) => (
             <span
               key={tag}
               className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm font-medium backdrop-blur-sm"
