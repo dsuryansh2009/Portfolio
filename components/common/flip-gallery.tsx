@@ -1,19 +1,21 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   useState,
   useMemo,
   useRef,
+  useEffect,
   type CSSProperties,
   type MouseEvent,
 } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ImageItem {
+  id?: string;
   image?: { src?: string; alt?: string } | string;
   focusY?: number;
-  text?: string; // Added for the back side text
+  text?: string;
 }
 
 interface TiltOptions {
@@ -30,6 +32,7 @@ interface ImageFlipProps {
   tilt: boolean;
   tiltOptions: TiltOptions;
   style?: CSSProperties;
+  onClose?: () => void;
 }
 
 const DEFAULT_ITEMS: ImageItem[] = [
@@ -39,27 +42,6 @@ const DEFAULT_ITEMS: ImageItem[] = [
     },
     focusY: 50,
     text: "A beautiful capture of moments that last forever.",
-  },
-  {
-    image: {
-      src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/08f4d1ae-43ca-4879-80f4-c1e7969eef00/w=800",
-    },
-    focusY: 50,
-    text: "Sometimes, the simplest things are the most profound.",
-  },
-  {
-    image: {
-      src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/75367195-8fa6-4ff1-d0ce-68df4694a700/w=800",
-    },
-    focusY: 50,
-    text: "Exploring the intersections of art and daily life.",
-  },
-  {
-    image: {
-      src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/f0b7559d-35e2-4feb-ae16-7ca802b21f00/w=800",
-    },
-    focusY: 50,
-    text: "The essence of street photography and urban culture.",
   },
 ];
 
@@ -102,15 +84,16 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
     tilt = DEFAULTS.tilt,
     tiltOptions = DEFAULTS.tiltOptions,
     style,
+    onClose,
   } = props;
 
   const items = useMemo(() => {
     const list = (images ?? []).filter((item) => srcOf(item?.image));
     return list.length ? list : DEFAULT_ITEMS;
   }, [images]);
-  const urls = useMemo(() => items.map((item) => srcOf(item.image)), [items]);
 
   const tiltRef = useRef<HTMLDivElement | null>(null);
+  const rectRef = useRef<DOMRect | null>(null);
 
   const effect = tiltOptions?.effect ?? DEFAULTS.tiltOptions.effect;
   const tiltLimit = tiltOptions?.tiltLimit ?? DEFAULTS.tiltOptions.tiltLimit;
@@ -118,32 +101,79 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
 
   const [index, setIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [direction, setDirection] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
 
   const toggleFlip = () => setIsFlipped((prev) => !prev);
 
-  const nextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const nextImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (isTransitioning) return;
+    setDirection(1);
+    setIsTransitioning(true);
     setIsFlipped(false);
     setIndex((prev) => (prev + 1) % items.length);
   };
 
-  const prevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const prevImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (isTransitioning) return;
+    setDirection(-1);
+    setIsTransitioning(true);
     setIsFlipped(false);
     setIndex((prev) => (prev - 1 + items.length) % items.length);
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+      
+      if (e.key === "ArrowRight") {
+        nextImage();
+      } else if (e.key === "ArrowLeft") {
+        prevImage();
+      } else if (e.key === "Escape" && onClose) {
+        onClose();
+      }
+    };
+    
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [items.length, isTransitioning, onClose]);
+
+  const onMouseEnter = () => {
+    if (tiltRef.current) {
+      rectRef.current = tiltRef.current.getBoundingClientRect();
+    }
   };
 
   const onMove = (e: MouseEvent<HTMLDivElement>) => {
     const el = tiltRef.current;
     if (!tilt || !el) return;
-    const { width, height, top, left } = el.getBoundingClientRect();
+    
+    if (!rectRef.current) rectRef.current = el.getBoundingClientRect();
+    const { width, height, top, left } = rectRef.current;
+    
     const mult = effect === "repel" ? -1 : 1;
     const tiltX = ((e.clientY - top) / height - 0.5) * (tiltLimit * 2) * mult;
     const tiltY = ((e.clientX - left) / width - 0.5) * -(tiltLimit * 2) * mult;
-    el.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(${scale}, ${scale}, ${scale})`;
+    
+    requestAnimationFrame(() => {
+      if (tiltRef.current) {
+        tiltRef.current.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(${scale}, ${scale}, ${scale})`;
+      }
+    });
   };
 
   const onLeave = () => {
+    rectRef.current = null;
     const el = tiltRef.current;
     if (!el) return;
     el.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
@@ -176,18 +206,68 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
         perspective: `${PERSPECTIVE}px`,
       }}
     >
+      {/* Dynamic Background Reaction */}
+      <AnimatePresence mode="popLayout">
+        <motion.img
+          key={`bg-${src}`}
+          src={src}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.2 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            inset: "-10%",
+            width: "120%",
+            height: "120%",
+            objectFit: "cover",
+            filter: "blur(40px) brightness(0.5)",
+            WebkitFilter: "blur(40px) brightness(0.5)",
+            transform: "translateZ(0)",
+            willChange: "opacity",
+            zIndex: -1,
+            pointerEvents: "none",
+          }}
+        />
+      </AnimatePresence>
+
+      {/* Progress Dots */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+        {items.map((_, i) => (
+          <button
+            key={i}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDirection(i > index ? 1 : -1);
+              setIndex(i);
+              setIsFlipped(false);
+            }}
+            aria-label={`Go to image ${i + 1}`}
+            className={`transition-all duration-300 rounded-full ${
+              i === index 
+                ? "w-1.5 h-1.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" 
+                : "w-1 h-1 bg-white/40 hover:bg-white/80"
+            }`}
+          />
+        ))}
+      </div>
+
       {/* Navigation Arrows */}
       {items.length > 1 && (
         <>
           <button
             onClick={prevImage}
-            className="absolute left-4 md:left-12 z-10 p-3 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 text-white backdrop-blur-md transition-all active:scale-95"
+            className="absolute left-4 md:left-12 z-20 p-3 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 text-white backdrop-blur-md transition-all active:scale-95 disabled:opacity-50"
+            disabled={isTransitioning}
+            aria-label="Previous Image"
           >
             <ChevronLeft size={28} />
           </button>
           <button
             onClick={nextImage}
-            className="absolute right-4 md:right-12 z-10 p-3 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 text-white backdrop-blur-md transition-all active:scale-95"
+            className="absolute right-4 md:right-12 z-20 p-3 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 text-white backdrop-blur-md transition-all active:scale-95 disabled:opacity-50"
+            disabled={isTransitioning}
+            aria-label="Next Image"
           >
             <ChevronRight size={28} />
           </button>
@@ -196,6 +276,7 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
 
       <div
         ref={tiltRef}
+        onMouseEnter={onMouseEnter}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
         onClick={toggleFlip}
@@ -208,6 +289,7 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
           transition: "transform 0.2s ease-out",
           willChange: "transform",
           cursor: "pointer",
+          zIndex: 10,
         }}
       >
         <motion.div
@@ -220,7 +302,12 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
           }}
         >
           {/* Front Face (Image) */}
-          <img
+          <motion.img
+            key={src}
+            initial={{ opacity: 0, scale: 0.97, x: direction > 0 ? 30 : -30 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30, opacity: { duration: 0.3 } }}
+            onAnimationComplete={() => setIsTransitioning(false)}
             src={src}
             alt={(typeof currentItem.image !== "string" && currentItem.image?.alt) || text || "Gallery Image"}
             draggable={false}
@@ -233,10 +320,12 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
               objectFit: fit,
               objectPosition: fit === "cover" ? `center ${focusOf(currentItem)}%` : "center",
               userSelect: "none",
-              pointerEvents: "none",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              display: "block",
             }}
           />
+
+
 
           {/* Back Face (Text) */}
           <div
@@ -282,22 +371,8 @@ const __originkitPresetProps = {
       focusY: 50,
       text: "Sometimes, the simplest things are the most profound.",
     },
-    {
-      image: {
-        src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/75367195-8fa6-4ff1-d0ce-68df4694a700/w=800",
-      },
-      focusY: 50,
-      text: "Exploring the intersections of art and daily life.",
-    },
-    {
-      image: {
-        src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/f0b7559d-35e2-4feb-ae16-7ca802b21f00/w=800",
-      },
-      focusY: 50,
-      text: "The essence of street photography and urban culture.",
-    },
   ],
-  fit: "cover" as const,
+  fit: "contain" as const,
   rounded: 16,
   transition: {
     ease: "easeInOut",

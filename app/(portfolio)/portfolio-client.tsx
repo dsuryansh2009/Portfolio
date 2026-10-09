@@ -203,7 +203,7 @@ export default function PortfolioClient({ initialActiveFolder = null }: { initia
                 <ArrowLeft size={20} />
                 <span className="font-medium text-sm tracking-wide">Back to Folders</span>
               </button>
-              <div className="w-full h-full flex flex-col items-center justify-center relative">
+              <div className="w-full flex-1 flex flex-col items-center justify-center relative">
                 {folders.find(f => f.name === activeFolder || f.slug === activeFolder)?.images?.length ? (
                   <FlipGallery 
                     images={folders.find(f => f.name === activeFolder || f.slug === activeFolder)!.images.map((img: any) => ({
@@ -212,6 +212,10 @@ export default function PortfolioClient({ initialActiveFolder = null }: { initia
                       focusY: 50
                     }))} 
                     fit="contain" 
+                    onClose={() => {
+                      setActiveFolder(null);
+                      if (initialActiveFolder) window.history.pushState({}, '', '/');
+                    }}
                   />
                 ) : (
                   <div className="text-white/50">No images in this folder</div>
