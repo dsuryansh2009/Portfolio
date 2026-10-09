@@ -134,42 +134,37 @@ export async function deleteFolderAction(id: string) {
   return prisma.galleryFolder.delete({ where: { id } });
 }
 
-export async function uploadImageAction(formData: FormData) {
+export async function getCloudinarySignatureAction() {
   const session = await auth();
   if (!session || session.user?.email !== process.env.ADMIN_EMAIL) throw new Error("Unauthorized");
 
-  const file = formData.get("file") as File;
-  const folderId = formData.get("folderId") as string;
-  const title = (formData.get("title") as string) || undefined;
-  const description = (formData.get("description") as string) || undefined;
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const signature = cloudinary.utils.api_sign_request(
+    { timestamp, folder: "portfolio_gallery" },
+    process.env.CLOUDINARY_API_SECRET!
+  );
 
-  if (!file || !folderId) {
-    throw new Error("Missing file or folderId");
-  }
+  return {
+    timestamp,
+    signature,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+  };
+}
 
-  // Convert file to base64
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  const base64Data = buffer.toString('base64');
-  const fileUri = `data:${file.type};base64,${base64Data}`;
+export async function saveGalleryImageAction(data: {
+  folderId: string;
+  title?: string;
+  description?: string;
+  cloudinaryPublicId: string;
+  imageUrl: string;
+  width: number;
+  height: number;
+}) {
+  const session = await auth();
+  if (!session || session.user?.email !== process.env.ADMIN_EMAIL) throw new Error("Unauthorized");
 
-  // Upload to Cloudinary
-  const uploadResult = await cloudinary.uploader.upload(fileUri, {
-    folder: "portfolio_gallery",
-  });
-
-  // Save to Database
-  return prisma.galleryImage.create({
-    data: {
-      folderId,
-      title,
-      description,
-      cloudinaryPublicId: uploadResult.public_id,
-      imageUrl: uploadResult.secure_url,
-      width: uploadResult.width,
-      height: uploadResult.height,
-    }
-  });
+  return prisma.galleryImage.create({ data });
 }
 
 export async function updateImageAction(id: string, data: { title?: string, description?: string }) {

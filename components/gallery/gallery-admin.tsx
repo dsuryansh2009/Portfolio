@@ -7,7 +7,8 @@ import {
   createFolderAction, 
   updateFolderAction, 
   deleteFolderAction, 
-  uploadImageAction, 
+  getCloudinarySignatureAction,
+  saveGalleryImageAction,
   updateImageAction, 
   deleteImageAction,
   reorderFoldersAction,
@@ -56,17 +57,41 @@ export default function GalleryAdmin({ folders: initialFolders }: { folders: any
     if (!activeFolderId || !e.target.files || e.target.files.length === 0) return;
     setIsUploading(true);
     
-    for (let i = 0; i < e.target.files.length; i++) {
-      const file = e.target.files[i];
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folderId", activeFolderId);
+    try {
+      const { timestamp, signature, cloudName, apiKey } = await getCloudinarySignatureAction();
       
-      try {
-        await uploadImageAction(formData);
-      } catch (err) {
-        console.error("Upload failed", err);
+      for (let i = 0; i < e.target.files.length; i++) {
+        const file = e.target.files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", apiKey!);
+        formData.append("timestamp", timestamp.toString());
+        formData.append("signature", signature);
+        formData.append("folder", "portfolio_gallery");
+        
+        const uploadRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+        
+        if (!uploadRes.ok) throw new Error("Upload failed");
+        
+        const uploadData = await uploadRes.json();
+        
+        await saveGalleryImageAction({
+          folderId: activeFolderId,
+          cloudinaryPublicId: uploadData.public_id,
+          imageUrl: uploadData.secure_url,
+          width: uploadData.width,
+          height: uploadData.height,
+        });
       }
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Failed to upload image. Please try again.");
     }
     
     setIsUploading(false);
