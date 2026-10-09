@@ -43,6 +43,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <User size={18} />
               About
             </Link>
+            <Link href="/admin/projects" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-white/70 hover:text-white font-medium">
+              <FileText size={18} />
+              Projects
+            </Link>
           </nav>
         </div>
 

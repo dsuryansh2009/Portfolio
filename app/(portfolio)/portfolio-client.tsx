@@ -16,49 +16,64 @@ import ProjectsShowcase from "@/components/common/projects-showcase";
 
 import { getFolders } from "@/app/actions/gallery";
 import { getAbout } from "@/app/actions/about";
+import { getFeaturedScribblesAction } from "@/app/actions/scribble";
+import { CommunityScribbles } from "@/components/blog/community-scribbles";
 
 let hasPlayedIntro = false;
 
-export default function PortfolioClient({ initialActiveFolder = null }: { initialActiveFolder?: string | null }) {
+export default function PortfolioClient({ 
+  initialActiveFolder = null,
+  initialFolders = [],
+  initialAboutContent = "",
+  initialScribbles = [],
+  initialProjects = []
+}: { 
+  initialActiveFolder?: string | null;
+  initialFolders?: any[];
+  initialAboutContent?: string;
+  initialScribbles?: any[];
+  initialProjects?: any[];
+}) {
   const [isChatFinished, setIsChatFinished] = useState(hasPlayedIntro);
   const [isFullyBlack, setIsFullyBlack] = useState(hasPlayedIntro);
   const [activeFolder, setActiveFolder] = useState<string | null>(initialActiveFolder);
-  const [folders, setFolders] = useState<any[]>([]);
-  const [isGalleryLoading, setIsGalleryLoading] = useState(true);
-  const [aboutContent, setAboutContent] = useState<string>("");
-
-  const loadFolders = async () => {
-    try {
-      const data = await getFolders();
-      setFolders(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsGalleryLoading(false);
-    }
-  };
-
-  const loadAbout = async () => {
-    try {
-      const data = await getAbout();
-      if (data) {
-        setAboutContent(data.paragraphs.join("\n\n"));
-      } else {
-        setAboutContent(`Hi, I'm dsuryansh a student from India with a deep curiosity for AI, technology, and building things that leave an impression.\n\nI come from a small town, but I've never believed that ambition is defined by where you start. While preparing for competitive exams in high school, I spend every spare moment exploring artificial intelligence, experimenting with new ideas, and turning them into projects and experiences.\n\nThis website is a collection of that journey—my work, my thoughts, and the things I'm learning along the way. It's not a showcase of perfection; it's a record of progress.\n\nThanks for stopping by. I hope you find something here that inspires you as much as creating it inspires me.`);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const [folders, setFolders] = useState<any[]>(initialFolders);
+  const [isGalleryLoading, setIsGalleryLoading] = useState(false);
+  const [aboutContent, setAboutContent] = useState<string>(initialAboutContent);
+  const [featuredScribbles, setFeaturedScribbles] = useState<any[]>(initialScribbles);
+  const [showExtras, setShowExtras] = useState(false);
 
   useEffect(() => {
-    loadFolders();
-    loadAbout();
     if (initialActiveFolder) {
       hasPlayedIntro = true;
       setIsChatFinished(true);
       setIsFullyBlack(true);
     }
+    
+    const handleHashChange = () => {
+      setShowExtras(window.location.hash === '#extras');
+    };
+    
+    // Check on mount and add standard hashchange listener
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Next.js <Link> doesn't trigger hashchange reliably for same-page hashes,
+    // so we listen to clicks on links directly.
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = (e.target as Element).closest('a');
+      if (target?.hash === '#extras') {
+        setShowExtras(true);
+      } else if (target?.hash && target.hash !== '#extras') {
+        setShowExtras(false);
+      }
+    };
+    document.addEventListener('click', handleLinkClick);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      document.removeEventListener('click', handleLinkClick);
+    };
   }, [initialActiveFolder]);
 
   const completeIntro = () => {
@@ -186,6 +201,13 @@ export default function PortfolioClient({ initialActiveFolder = null }: { initia
         </section>
       )}
 
+      {/* Projects Section */}
+      {isFullyBlack && (
+        <section id="projects" className="relative z-10 w-full snap-start bg-[#000000]">
+          <ProjectsShowcase projects={initialProjects} />
+        </section>
+      )}
+
       {/* Gallery / Viewer Section */}
       {isFullyBlack && (
         <section id="gallery" className="relative z-10 flex min-h-screen w-full snap-start flex-col items-center justify-center bg-[#000000] px-8 md:px-24 overflow-hidden">
@@ -238,6 +260,30 @@ export default function PortfolioClient({ initialActiveFolder = null }: { initia
               <div className="text-white/50">No folders available.</div>
             )
           )}
+        </section>
+      )}
+      {/* Extras Section Overlay */}
+      {isFullyBlack && showExtras && (
+        <section id="extras" className="fixed inset-0 z-[100] overflow-y-auto bg-[#050505] px-8 md:px-24 py-24">
+          <button 
+            onClick={() => {
+              window.history.pushState({}, '', '/');
+              setShowExtras(false);
+            }}
+            className="absolute top-8 left-8 md:left-12 z-[101] flex items-center gap-2 px-4 py-2 text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md"
+          >
+            <ArrowLeft size={20} />
+            <span className="font-medium text-sm tracking-wide">Back</span>
+          </button>
+          
+          <div className="w-full max-w-6xl mx-auto pt-16">
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-12 border-b border-white/10 pb-6 font-serif italic tracking-tight">Extras</h2>
+            {featuredScribbles.length > 0 ? (
+              <CommunityScribbles initialScribbles={featuredScribbles} />
+            ) : (
+              <div className="text-white/50">No featured scribbles available yet.</div>
+            )}
+          </div>
         </section>
       )}
     </main>

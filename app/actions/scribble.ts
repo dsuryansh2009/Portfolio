@@ -44,6 +44,19 @@ export async function getApprovedScribblesAction() {
   }
 }
 
+export async function getFeaturedScribblesAction() {
+  try {
+    const scribbles = await prisma.scribble.findMany({
+      where: { isFeatured: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return scribbles;
+  } catch (error) {
+    console.error("Failed to fetch featured scribbles:", error);
+    return [];
+  }
+}
+
 export async function likeScribbleAction(id: string) {
   try {
     const scribble = await prisma.scribble.update({
