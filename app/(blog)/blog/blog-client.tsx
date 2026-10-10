@@ -5,6 +5,7 @@ import { Link as LinkIcon, ExternalLink, Calendar, Paperclip, FileText, Music, X
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/navbar";
+import ScrollProgress from "@/components/common/scroll-progress";
 import { BlogInteractions } from "@/components/blog/blog-interactions";
 import { CreatePost } from "@/components/blog/create-post";
 import { getPosts, createPostAction, deletePostAction } from "@/app/actions/blog";
@@ -65,6 +66,7 @@ export default function BlogClient() {
   return (
     <main className="min-h-screen w-full bg-[#050505] text-white selection:bg-[#84b897] selection:text-black pb-32">
       <h1 className="sr-only">dsuryansh&apos;s Blog & Thoughts</h1>
+      <ScrollProgress />
       <Navbar />
       
       {/* Back Button */}

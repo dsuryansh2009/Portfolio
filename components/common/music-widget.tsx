@@ -66,10 +66,10 @@ export default function MusicWidget() {
       href={`https://last.fm/user/${track.username}`}
       target="_blank"
       rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 20, x: "-50%", scale: 0.8 }}
-      animate={{ opacity: 1, y: 0, x: "-50%", scale: 0.8 }}
+      initial={{ opacity: 0, y: 20, scale: 1 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 200, damping: 20 }}
-      className="absolute bottom-48 left-1/2 z-[1000] flex flex-col origin-bottom cursor-pointer group/widget"
+      className="relative flex flex-col origin-bottom cursor-pointer group/widget"
     >
       {/* Hover Tooltip */}
       <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:-translate-y-1 transition-all duration-300 ease-out whitespace-nowrap z-50">
@@ -81,7 +81,7 @@ export default function MusicWidget() {
       {/* Main Widget Card */}
       <div 
         title="( dsuryansh music activity, also follow me on spotify 🥺 )"
-        className="flex items-center gap-4 bg-[#151a17] border border-[#26332a] p-3 pr-8 rounded-2xl shadow-2xl transition-all duration-300 group-hover/widget:border-[#84b897]/40 group-hover/widget:shadow-[0_0_30px_rgba(132,184,151,0.15)] group-hover/widget:-translate-y-1"
+        className="w-[320px] flex items-center gap-4 bg-[#151a17] border border-[#26332a] p-3 pr-8 rounded-2xl shadow-2xl transition-all duration-300 group-hover/widget:border-[#84b897]/40 group-hover/widget:shadow-[0_0_30px_rgba(132,184,151,0.15)] group-hover/widget:-translate-y-1"
       >
         <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900 border border-white/5">
           {track.image ? (
@@ -97,14 +97,14 @@ export default function MusicWidget() {
           )}
         </div>
         
-        <div className="flex flex-col justify-center">
-          <div className="text-[11px] font-bold tracking-widest text-[#a3b3ac] uppercase mb-1">
+        <div className="flex flex-col justify-center flex-1 min-w-0 overflow-hidden">
+          <div className="text-[11px] font-bold tracking-widest text-[#a3b3ac] uppercase mb-1 truncate">
             {track.nowPlaying ? "Now Playing" : `Last Played • ${getTimeAgo(track.timestamp)}`}
           </div>
-          <div className="text-[17px] font-bold text-[#f2f5f4] leading-tight max-w-[250px] truncate">
+          <div className="text-[17px] font-bold text-[#f2f5f4] leading-tight truncate">
             {track.name}
           </div>
-          <div className="text-[13px] font-medium text-[#84968e] max-w-[250px] truncate mt-0.5">
+          <div className="text-[13px] font-medium text-[#84968e] truncate mt-0.5">
             {track.artist} {track.album ? `• ${track.album}` : ""}
           </div>
         </div>

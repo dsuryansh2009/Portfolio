@@ -10,9 +10,11 @@ import Navbar from "@/components/layout/navbar";
 import ConnectionsMenu from "@/components/common/connections-menu";
 import BlockTextReveal from "@/components/common/block-text-reveal";
 import MusicWidget from "@/components/common/music-widget";
+import DiscordWidget from "@/components/common/discord-widget";
 import HoverImageReveal from "@/components/common/hover-image-reveal";
 import FlipGallery from "@/components/common/flip-gallery";
 import ProjectsShowcase from "@/components/common/projects-showcase";
+import ScrollProgress from "@/components/common/scroll-progress";
 
 import { getFolders } from "@/app/actions/gallery";
 import { getAbout } from "@/app/actions/about";
@@ -136,9 +138,13 @@ export default function PortfolioClient({
         
         {isFullyBlack && (
           <>
+            <ScrollProgress />
             <Navbar />
-            <MusicWidget />
-            <div className="absolute inset-x-0 bottom-12 flex justify-center z-10 pointer-events-none">
+            <div className="absolute bottom-40 left-1/2 -translate-x-1/2 z-[1000] flex flex-col md:flex-row items-center gap-4 scale-[0.8] origin-bottom">
+              <MusicWidget />
+              <DiscordWidget />
+            </div>
+            <div className="absolute inset-x-0 bottom-12 flex justify-center z-[1010] pointer-events-none">
               <div className="pointer-events-auto">
                 <ConnectionsMenu />
               </div>

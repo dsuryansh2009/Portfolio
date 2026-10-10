@@ -70,7 +70,6 @@ export const viewport = {
 };
 
 import SmoothScroll from "@/components/layout/smooth-scroll";
-import ScrollProgress from "@/components/common/scroll-progress";
 
 export default function RootLayout({
   children,
@@ -84,7 +83,6 @@ export default function RootLayout({
     >
       <body className="bg-[#050505] overflow-x-hidden">
         <SmoothScroll>
-          <ScrollProgress />
           <GlobalEffects />
           {children}
           <Analytics />
