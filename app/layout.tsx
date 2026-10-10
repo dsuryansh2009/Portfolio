@@ -58,10 +58,7 @@ export const metadata: Metadata = {
     description: "Personal portfolio of dsuryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
     creator: "@dsuryansh",
   },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
+
   manifest: "/manifest.json",
 };
 

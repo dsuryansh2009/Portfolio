@@ -201,23 +201,21 @@ export default function GalleryAdmin({ folders: initialFolders }: { folders: any
             </label>
           </div>
 
-          <Reorder.Group axis="y" values={activeFolder?.images || []} onReorder={handleReorderImages} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <Reorder.Group axis="y" values={activeFolder?.images || []} onReorder={handleReorderImages} className="flex flex-col gap-4">
             {activeFolder?.images?.map((img: any) => (
-              <Reorder.Item key={img.id} value={img} className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex flex-col relative">
-                <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                  <div className="cursor-grab active:cursor-grabbing p-2 bg-black/50 backdrop-blur-md rounded-lg text-white hover:bg-black/80 transition-colors">
+              <Reorder.Item key={img.id} value={img} className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col md:flex-row items-center gap-6 group">
+                <div className="cursor-grab active:cursor-grabbing p-2 text-white/30 hover:text-white transition-colors self-start md:self-center hidden md:block">
+                  <GripVertical size={20} />
+                </div>
+                
+                <div className="w-full md:w-48 aspect-video md:aspect-square md:shrink-0 bg-black/50 rounded-lg overflow-hidden border border-white/10 relative">
+                  <img src={img.imageUrl} alt={img.title || "Image"} className="w-full h-full object-contain" />
+                  <div className="md:hidden absolute top-2 right-2 cursor-grab active:cursor-grabbing p-2 bg-black/50 backdrop-blur-md rounded-lg text-white">
                     <GripVertical size={16} />
                   </div>
-                  <button onClick={() => handleDeleteImage(img.id)} className="p-2 bg-red-500/80 backdrop-blur-md text-white rounded-lg hover:bg-red-500 transition-colors">
-                    <Trash2 size={16} />
-                  </button>
                 </div>
                 
-                <div className="aspect-[4/3] bg-black/50 w-full overflow-hidden">
-                  <img src={img.imageUrl} alt={img.title || "Image"} className="w-full h-full object-contain" />
-                </div>
-                
-                <div className="p-4 flex flex-col gap-2">
+                <div className="flex flex-col gap-3 flex-1 w-full">
                   <div>
                     <label className="text-xs text-white/50 font-medium">Title</label>
                     <input 
@@ -248,6 +246,12 @@ export default function GalleryAdmin({ folders: initialFolders }: { folders: any
                       }}
                     />
                   </div>
+                </div>
+
+                <div className="self-end md:self-center mt-2 md:mt-0">
+                  <button onClick={() => handleDeleteImage(img.id)} className="bg-red-500/10 text-red-400 p-3 rounded-lg hover:bg-red-500/20 transition-colors">
+                    <Trash2 size={18} />
+                  </button>
                 </div>
               </Reorder.Item>
             ))}
