@@ -99,6 +99,14 @@ export default function PortfolioClient({
   return (
     <main className="w-full bg-[#0A0710]">
       <h1 className="sr-only">dsuryansh</h1>
+
+      {isFullyBlack && (
+        <>
+          <ScrollProgress />
+          <Navbar />
+        </>
+      )}
+
       {!isFullyBlack && (
         <MosaicLens
           style={{
@@ -138,8 +146,6 @@ export default function PortfolioClient({
         
         {isFullyBlack && (
           <>
-            <ScrollProgress />
-            <Navbar />
             <div className="absolute bottom-40 left-1/2 -translate-x-1/2 z-[1000] flex flex-col md:flex-row items-center gap-4 scale-[0.8] origin-bottom">
               <MusicWidget />
               <DiscordWidget />
