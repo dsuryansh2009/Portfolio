@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   useState,
   useMemo,
@@ -241,30 +241,6 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Dynamic Background Reaction */}
-      <AnimatePresence mode="popLayout">
-        <motion.img
-          key={`bg-${src}`}
-          src={src}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.2 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          style={{
-            position: "absolute",
-            inset: "-10%",
-            width: "120%",
-            height: "120%",
-            objectFit: "cover",
-            filter: "blur(40px) brightness(0.5)",
-            WebkitFilter: "blur(40px) brightness(0.5)",
-            transform: "translateZ(0)",
-            willChange: "opacity",
-            zIndex: -1,
-            pointerEvents: "none",
-          }}
-        />
-      </AnimatePresence>
 
       {/* Progress Dots */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
