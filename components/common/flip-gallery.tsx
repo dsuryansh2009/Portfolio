@@ -103,6 +103,22 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [direction, setDirection] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+
+  // Touch swipe handling
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(diff) > 40) {
+      if (diff < 0) nextImage();
+      else prevImage();
+    }
+  };
 
 
   const toggleFlip = () => setIsFlipped((prev) => !prev);
@@ -124,6 +140,23 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
     setIsFlipped(false);
     setIndex((prev) => (prev - 1 + items.length) % items.length);
   };
+
+  // Preload adjacent images for instantaneous flipping
+  useEffect(() => {
+    if (!items.length) return;
+    const nextIdx = (index + 1) % items.length;
+    const prevIdx = (index - 1 + items.length) % items.length;
+    const nextSrc = srcOf(items[nextIdx]?.image);
+    const prevSrc = srcOf(items[prevIdx]?.image);
+    if (nextSrc) {
+      const img = new window.Image();
+      img.src = nextSrc;
+    }
+    if (prevSrc && prevSrc !== nextSrc) {
+      const img = new window.Image();
+      img.src = prevSrc;
+    }
+  }, [index, items]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -205,6 +238,8 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
         justifyContent: "center",
         perspective: `${PERSPECTIVE}px`,
       }}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
     >
       {/* Dynamic Background Reaction */}
       <AnimatePresence mode="popLayout">
@@ -257,19 +292,19 @@ function __OriginkitBase_ImageFlip(props: Partial<ImageFlipProps>) {
         <>
           <button
             onClick={prevImage}
-            className="absolute left-4 md:left-12 z-20 p-3 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 text-white backdrop-blur-md transition-all active:scale-95 disabled:opacity-50"
+            className="absolute left-2 md:left-12 z-20 p-3 md:p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white backdrop-blur-md transition-all active:scale-95 disabled:opacity-50 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
             disabled={isTransitioning}
             aria-label="Previous Image"
           >
-            <ChevronLeft size={28} />
+            <ChevronLeft size={24} />
           </button>
           <button
             onClick={nextImage}
-            className="absolute right-4 md:right-12 z-20 p-3 rounded-full bg-white/5 hover:bg-white/20 border border-white/10 text-white backdrop-blur-md transition-all active:scale-95 disabled:opacity-50"
+            className="absolute right-2 md:right-12 z-20 p-3 md:p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white backdrop-blur-md transition-all active:scale-95 disabled:opacity-50 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
             disabled={isTransitioning}
             aria-label="Next Image"
           >
-            <ChevronRight size={28} />
+            <ChevronRight size={24} />
           </button>
         </>
       )}

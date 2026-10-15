@@ -3,10 +3,16 @@
 import { usePathname } from "next/navigation";
 import Hairline from "@/components/common/hairline-loader";
 import DotCursor from "@/components/common/dot-cursor";
+import { useEffect, useState } from "react";
 
 export default function GlobalEffects() {
   const pathname = usePathname();
   const isBlog = pathname === "/blog" || pathname.startsWith("/admin");
+  const [hasFinePointer, setHasFinePointer] = useState(false);
+
+  useEffect(() => {
+    setHasFinePointer(window.matchMedia("(pointer: fine)").matches);
+  }, []);
 
   return (
     <div style={{ display: isBlog ? "none" : "block" }}>
@@ -21,17 +27,19 @@ export default function GlobalEffects() {
           minHeight: 0,
         }}
       />
-      <DotCursor
-        trailColor="#FF2D8D"
-        style={{
-          position: "fixed",
-          inset: 0,
-          width: "100vw",
-          height: "100vh",
-          pointerEvents: "none",
-          zIndex: 9998,
-        }}
-      />
+      {hasFinePointer && (
+        <DotCursor
+          trailColor="#FF2D8D"
+          style={{
+            position: "fixed",
+            inset: 0,
+            width: "100vw",
+            height: "100vh",
+            pointerEvents: "none",
+            zIndex: 9998,
+          }}
+        />
+      )}
     </div>
   );
 }

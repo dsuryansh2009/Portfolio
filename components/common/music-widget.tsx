@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin } from "lucide-react";
 
 type TrackData = {
   name: string;
@@ -32,13 +31,16 @@ export default function MusicWidget() {
   const [track, setTrack] = useState<TrackData | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchMusic = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
       try {
         const res = await fetch(`/api/lastfm?t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) return;
         const data = await res.json();
         const recent = data?.recenttracks?.track?.[0];
         
-        if (recent) {
+        if (recent && isMounted) {
           setTrack({
             name: recent.name,
             artist: recent.artist["#text"],
@@ -56,7 +58,19 @@ export default function MusicWidget() {
 
     fetchMusic();
     const interval = setInterval(fetchMusic, 30000); 
-    return () => clearInterval(interval);
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchMusic();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   if (!track) return null;

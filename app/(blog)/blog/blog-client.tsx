@@ -1,13 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Link as LinkIcon, ExternalLink, Calendar, Paperclip, FileText, Music, X, ArrowLeft, Trash2 } from "lucide-react";
+import { Calendar, ArrowLeft, Music, FileText, Link as LinkIcon, ExternalLink } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/navbar";
 import { BlogInteractions } from "@/components/blog/blog-interactions";
 import { CreatePost } from "@/components/blog/create-post";
-import { getPosts, createPostAction, deletePostAction } from "@/app/actions/blog";
+import { getPosts, createPostAction } from "@/app/actions/blog";
 import { MicroPost } from "@/data/blog";
 import { LeaveScribble } from "@/components/blog/leave-scribble";
 import { CommunityScribbles } from "@/components/blog/community-scribbles";
@@ -70,12 +70,12 @@ export default function BlogClient() {
       {/* Back Button */}
       <Link 
         href="/"
-        className="fixed top-8 left-8 md:top-12 md:left-12 z-[100] p-3 md:p-4 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 hover:border-white/20 hover:scale-105 transition-all group flex items-center justify-center text-white/50 hover:text-white shadow-xl shadow-black/50"
+        className="fixed top-5 left-4 md:top-12 md:left-12 z-[100] p-3 md:p-4 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 hover:border-white/20 hover:scale-105 transition-all group flex items-center justify-center text-white/50 hover:text-white shadow-xl shadow-black/50"
       >
         <ArrowLeft size={20} strokeWidth={2} className="group-hover:-translate-x-1 transition-transform" />
       </Link>
 
-      <div className="max-w-2xl mx-auto px-6 pt-32">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-24 md:pt-32">
         {/* Toggle Slider */}
         <div className="flex bg-white/5 p-1 rounded-full relative w-64 mx-auto mb-12">
           <motion.div 

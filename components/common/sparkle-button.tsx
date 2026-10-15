@@ -196,7 +196,7 @@ const __originkitPresetProps: SparkleButtonProps = {
   text: "सूर्यांश",
   fontFamily: "var(--font-martel), var(--font-lora), Inter, sans-serif",
   fontWeight: 800,
-  fontSize: 96,
+  fontSize: "clamp(52px, 15vw, 96px)",
   textColor: "#FFFFFF",
   shadowColor: "#FF00FD",
   glareColor: "rgba(255, 255, 255, 0.75)",

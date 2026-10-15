@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import CreaseFlyer from "./crease-flyer";
@@ -9,7 +8,7 @@ import CreaseFlyer from "./crease-flyer";
 const ProjectCard = ({ project, index }: { project: any; index: number }) => {
   return (
     <motion.div
-      className="group relative flex flex-col md:flex-row items-center gap-8 md:gap-16 w-full max-w-6xl mx-auto py-16 border-b border-white/5 last:border-0"
+      className="group relative flex flex-col md:flex-row items-center gap-8 md:gap-16 w-full max-w-6xl mx-auto py-12 md:py-16 border-b border-white/5 last:border-0"
     >
       {/* Image Section */}
       <div 
@@ -28,7 +27,7 @@ const ProjectCard = ({ project, index }: { project: any; index: number }) => {
       {/* Content Section */}
       <div className="w-full md:w-1/2 flex flex-col items-start text-left space-y-6">
         <div className="space-y-2">
-          <h3 className={`text-3xl md:text-5xl font-medium tracking-tight text-white transition-colors duration-500 ${
+          <h3 className={`text-2xl sm:text-3xl md:text-5xl font-medium tracking-tight text-white transition-colors duration-500 ${
             project.title === "Neo Brutalist Web" 
               ? "group-hover:text-[#b88484]" 
               : "group-hover:text-[#84b897]"
@@ -58,7 +57,7 @@ const ProjectCard = ({ project, index }: { project: any; index: number }) => {
               href={project.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black font-medium hover:bg-[#84b897] transition-colors duration-300"
+              className="flex items-center gap-2 px-5 py-3 rounded-full bg-white text-black font-medium hover:bg-[#84b897] transition-colors duration-300 text-sm md:text-base min-h-[44px]"
             >
               <span>Live Site</span>
               <ExternalLink size={16} />
@@ -69,7 +68,7 @@ const ProjectCard = ({ project, index }: { project: any; index: number }) => {
               href={project.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 border border-white/20 text-white font-medium hover:bg-white/20 transition-colors duration-300 backdrop-blur-sm"
+              className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/10 border border-white/20 text-white font-medium hover:bg-white/20 transition-colors duration-300 backdrop-blur-sm text-sm md:text-base min-h-[44px]"
             >
               <FaGithub size={18} />
               <span>Source</span>
@@ -83,7 +82,7 @@ const ProjectCard = ({ project, index }: { project: any; index: number }) => {
 
 export default function ProjectsShowcase({ projects = [] }: { projects?: any[] }) {
   return (
-    <div className="w-full min-h-screen flex flex-col items-center justify-center py-24 px-8 relative z-20">
+    <div className="w-full min-h-screen flex flex-col items-center justify-center py-16 md:py-24 px-4 sm:px-8 relative z-20">
       <div className="w-full max-w-7xl mx-auto relative flex flex-col justify-center">
         {/* Projects List */}
         <div className="flex flex-col w-full relative z-20">

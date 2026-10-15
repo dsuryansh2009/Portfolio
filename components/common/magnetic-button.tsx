@@ -44,7 +44,7 @@ export default function MagneticButton({ children, href, onClick, className = ""
       ref={ref}
       onMouseMove={handleMouse}
       onMouseLeave={reset}
-      className="relative p-8 inline-block" // Extra padding increases the magnetic catch area
+      className="relative p-4 md:p-8 inline-block" // Extra padding increases the magnetic catch area
     >
       {href ? (
         <Link href={href} onClick={onClick}>

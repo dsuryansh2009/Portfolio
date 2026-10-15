@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter, Lora, Martel } from "next/font/google";
 import "@/styles/globals.css";
 import GlobalEffects from "@/components/layout/global-effects";
+import SmoothScroll from "@/components/layout/smooth-scroll";
 import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
@@ -62,11 +63,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   themeColor: "#050505",
+  width: "device-width",
+  initialScale: 1,
 };
-
-import SmoothScroll from "@/components/layout/smooth-scroll";
 
 export default function RootLayout({
   children,
@@ -78,7 +79,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${lora.variable} ${martel.variable} antialiased`}
     >
-      <body className="bg-[#050505] overflow-x-hidden">
+      <body className="bg-[#050505] overflow-x-hidden min-h-screen">
         <SmoothScroll>
           <GlobalEffects />
           {children}

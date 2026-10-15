@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, X } from "lucide-react";
 import { SiGithub, SiDiscord, SiPinterest, SiInstagram, SiSpotify, SiAnilist } from "react-icons/si";
@@ -50,6 +50,19 @@ const socials = [
 
 export default function ConnectionsMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  // Detect mobile to use grid layout instead of horizontal spread
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // On mobile: use a grid popup, on desktop: horizontal spread
+  const iconSize = isMobile ? 48 : 56;
+  const itemSpacing = isMobile ? 56 : 65;
 
   return (
     <div className="relative flex items-center justify-center h-[120px] w-full max-w-5xl mx-auto">
@@ -69,13 +82,14 @@ export default function ConnectionsMenu() {
             </motion.div>
           )}
 
-          {isOpen && (
+          {isOpen && !isMobile && (
             <>
+              {/* Desktop: horizontal spread */}
               {/* The Center Close Button */}
               <motion.button
                 key="close-button"
                 onClick={() => setIsOpen(false)}
-                className="absolute flex items-center justify-center w-[52px] h-[52px] md:w-14 md:h-14 rounded-full bg-black text-white hover:bg-red-600 hover:text-white transition-colors duration-300 z-50"
+                className="absolute flex items-center justify-center w-14 h-14 rounded-full bg-black text-white hover:bg-red-600 hover:text-white transition-colors duration-300 z-50"
                 initial={{ x: 0, scale: 0 }}
                 animate={{ x: 0, scale: 1 }}
                 exit={{ x: 0, scale: 0 }}
@@ -92,11 +106,8 @@ export default function ConnectionsMenu() {
 
               {/* The Social Icons */}
               {socials.map((social, i) => {
-                // Skips the 0 position (center) for socials
-                // i = 0,1,2,3 -> pos = -4, -3, -2, -1
-                // i = 4,5,6,7,8 -> pos = 1, 2, 3, 4, 5
                 const pos = i < 4 ? i - 4 : i - 3;
-                const offset = pos * 65;
+                const offset = pos * itemSpacing;
                 const delay = Math.abs(pos) * 0.05;
 
                 return (
@@ -105,7 +116,7 @@ export default function ConnectionsMenu() {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute flex items-center justify-center w-[52px] h-[52px] md:w-14 md:h-14 rounded-full bg-white text-black hover:bg-[#0022FF] hover:text-white transition-colors duration-300 group"
+                    className="absolute flex items-center justify-center w-14 h-14 rounded-full bg-white text-black hover:bg-[#0022FF] hover:text-white transition-colors duration-300 group"
                     initial={{ x: 0, scale: 0 }}
                     animate={{ x: offset, scale: 1 }}
                     exit={{ x: 0, scale: 0, opacity: 0 }}
@@ -127,6 +138,48 @@ export default function ConnectionsMenu() {
                 );
               })}
             </>
+          )}
+
+          {isOpen && isMobile && (
+            <motion.div
+              key="mobile-grid"
+              className="absolute z-50 flex flex-col items-center gap-3"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-black border border-white/20 text-white hover:bg-red-600 transition-colors duration-300 mb-1"
+              >
+                <X size={18} />
+              </button>
+              {/* Grid of icons */}
+              <div className="grid grid-cols-4 gap-3">
+                {socials.map((social, i) => (
+                  <motion.a
+                    key={social.name}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-white text-black hover:bg-[#0022FF] hover:text-white transition-colors duration-300"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 20,
+                      delay: i * 0.04,
+                    }}
+                    title={social.label}
+                  >
+                    {social.icon}
+                  </motion.a>
+                ))}
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

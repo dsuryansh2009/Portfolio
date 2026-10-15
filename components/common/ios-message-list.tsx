@@ -24,6 +24,7 @@ type Props = {
   transition?: Transition;
   style?: React.CSSProperties;
   onComplete?: () => void;
+  startImmediately?: boolean;
 };
 
 const HIDDEN = { opacity: 0, scale: 0.85, y: 10 };
@@ -116,10 +117,12 @@ function __OriginkitBase_IOSMessageList({
   transition = DEFAULT_TRANSITION,
   style,
   onComplete,
+  startImmediately = false,
 }: Props) {
   const [scope, animate] = useAnimate();
   const [isTyping, setIsTyping] = useState(showTyping);
   const isInView = useInView(scope, { once: true, margin: "-100px" });
+  const shouldAnimate = startImmediately || isInView;
   const fontStyles = (font ?? {}) as React.CSSProperties;
   const baseTransition = useMemo<Transition>(
     () => transition ?? { type: "spring", stiffness: 450, damping: 28 },
@@ -158,7 +161,7 @@ function __OriginkitBase_IOSMessageList({
   }, [animate, scope]);
 
   useEffect(() => {
-    if (!isInView) {
+    if (!shouldAnimate) {
       resetToHidden();
       return;
     }
@@ -172,7 +175,7 @@ function __OriginkitBase_IOSMessageList({
 
     const t = setTimeout(runAppear, 50);
     return () => clearTimeout(t);
-  }, [doAnimate, runAppear, resetToHidden, runDots, animate, messages.length, showTyping, isInView]);
+  }, [doAnimate, runAppear, resetToHidden, runDots, animate, messages.length, showTyping, shouldAnimate]);
 
   return (
     <div

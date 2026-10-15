@@ -255,19 +255,23 @@ function __OriginkitBase_PredictiveArcHorizon(props: Props) {
         let beatThreshold = 0.5;
         let beatHold = 0;
 
-        // Visibility tracking for performance
+        // Visibility tracking for performance - stop loop completely when offscreen
         let isVisible = true;
         const observer = new IntersectionObserver((entries) => {
             if (entries[0]) {
+                const wasVisible = isVisible;
                 isVisible = entries[0].isIntersecting;
+                if (!wasVisible && isVisible) {
+                    last = performance.now();
+                    cancelAnimationFrame(raf);
+                    raf = requestAnimationFrame(render);
+                }
             }
         }, { threshold: 0 });
         observer.observe(canvas);
 
         const render = (now: number) => {
             if (!isVisible) {
-                last = now;
-                raf = requestAnimationFrame(render);
                 return;
             }
 

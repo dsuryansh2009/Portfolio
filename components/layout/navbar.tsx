@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { Play, Pause, SkipBack, SkipForward } from "lucide-react";
 
@@ -165,22 +166,83 @@ export default function Navbar() {
         handlersRef.current.handlePrev();
       } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
-        
-        const mainContainer = document.querySelector('main');
-        if (mainContainer) {
-            const scrollAmount = window.innerHeight;
-            if (e.key === 'ArrowDown') {
-                mainContainer.scrollBy({ top: scrollAmount, behavior: 'smooth' });
-            } else {
-                mainContainer.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
-            }
-        }
+        const scrollAmount = window.innerHeight;
+        window.scrollBy({ 
+          top: e.key === 'ArrowDown' ? scrollAmount : -scrollAmount, 
+          behavior: 'smooth' 
+        });
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  const [homeTarget, setHomeTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (pathname === "/blog") {
+      setHomeTarget(null);
+      return;
+    }
+    const updateTarget = () => {
+      const el = document.getElementById("home-music-controls");
+      if (el) setHomeTarget(el);
+    };
+    updateTarget();
+    const interval = setInterval(updateTarget, 200);
+    return () => clearInterval(interval);
+  }, [pathname]);
+
+  const [isVisible, setIsVisible] = useState(true);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    // Only apply scroll-direction visibility on the main page where links are displayed
+    if (pathname !== "/") {
+      setIsVisible(true);
+      return;
+    }
+
+    // Set initial position
+    lastScrollY.current = window.scrollY;
+    setIsAtTop(window.scrollY <= 20);
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const diff = currentScrollY - lastScrollY.current;
+
+      if (currentScrollY <= 20) {
+        setIsAtTop(true);
+        setIsVisible(true);
+      } else {
+        setIsAtTop(false);
+
+        // Ignore overscroll bouncing at bottom of page
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        if (currentScrollY > maxScroll) {
+          return;
+        }
+
+        // Require meaningful scroll delta to avoid jitter
+        if (Math.abs(diff) > 6) {
+          if (diff > 0) {
+            // Scrolling down -> hide navbar
+            setIsVisible(false);
+          } else {
+            // Scrolling up -> show navbar
+            setIsVisible(true);
+          }
+        }
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [pathname]);
 
   return (
     <>
@@ -216,73 +278,104 @@ export default function Navbar() {
           100% { opacity: 0; filter: blur(6px); }
         }
       `}</style>
-      <nav className="fixed top-0 left-0 w-full z-[9999] flex justify-center py-8 px-8 pointer-events-none">
-        <ul className={`flex items-center gap-6 md:gap-12 pointer-events-auto ${pathname === "/blog" ? "hidden" : ""}`}>
+
+      {/* Top Navbar Header */}
+      <header
+        className={`fixed top-0 left-0 w-full z-[9999] flex justify-center py-6 md:py-8 px-4 md:px-8 pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+        }`}
+      >
+        <ul
+          className={`flex items-center gap-6 md:gap-12 pointer-events-auto flex-wrap justify-center transition-all duration-300 ${
+            isAtTop
+              ? "bg-transparent border border-transparent py-1 px-2"
+              : "bg-black/60 backdrop-blur-md border border-white/10 py-2.5 px-6 rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+          } ${pathname === "/blog" ? "hidden" : ""}`}
+        >
           {sections.map((section) => (
             <li key={section.name}>
               <Link
                 href={section.href}
-                className="text-white/50 hover:text-white transition-colors duration-300 text-xs md:text-sm tracking-[0.2em] uppercase font-medium"
+                className="text-white/50 hover:text-white transition-colors duration-300 text-xs md:text-sm tracking-[0.2em] uppercase font-medium whitespace-nowrap"
               >
                 {section.name}
               </Link>
             </li>
           ))}
         </ul>
+      </header>
         
-        {/* Transparent Music Player Controls */}
-        <div className={`fixed z-[9999] flex items-center gap-8 py-2 pointer-events-auto ${pathname === "/blog" ? "bottom-8 right-8" : "bottom-8 left-1/2 -translate-x-1/2"}`}>
-          
-          {/* Floating Track Name Particles */}
-          {particles.map((p) => (
-            <div
-              key={p.id}
-              className="absolute left-1/2 top-1/2 pointer-events-none z-[9999]"
-              style={{ 
-                animation: "float-x 3.5s forwards, fade-blur 3.5s linear forwards",
-                "--x-dist": p.xDist,
-              } as React.CSSProperties}
-            >
-              <div 
-                className="text-white font-medium text-[11px] tracking-widest uppercase"
-                style={{
-                  animation: "float-y 3.5s forwards",
-                  textShadow: "0px 2px 12px rgba(0,0,0,0.9)",
-                  "--y-peak": p.yPeak,
-                  "--y-end": p.yEnd,
+      {/* Transparent Music Player Controls */}
+      {(() => {
+        const controls = (
+          <div
+            className={
+              pathname === "/blog"
+                ? "fixed z-[9999] flex items-center gap-8 py-2 pointer-events-auto pb-safe bottom-8 right-8"
+                : "relative flex items-center gap-8 py-2 pointer-events-auto"
+            }
+          >
+            {/* Floating Track Name Particles */}
+            {particles.map((p) => (
+              <div
+                key={p.id}
+                className="absolute left-1/2 top-1/2 pointer-events-none z-[9999]"
+                style={{ 
+                  animation: "float-x 3.5s forwards, fade-blur 3.5s linear forwards",
+                  "--x-dist": p.xDist,
                 } as React.CSSProperties}
               >
-                {p.text}
+                <div 
+                  className="text-white font-medium text-[11px] tracking-widest uppercase"
+                  style={{
+                    animation: "float-y 3.5s forwards",
+                    textShadow: "0px 2px 12px rgba(0,0,0,0.9)",
+                    "--y-peak": p.yPeak,
+                    "--y-end": p.yEnd,
+                  } as React.CSSProperties}
+                >
+                  {p.text}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          <button 
-            onClick={handlePrev}
-            className="text-white/50 hover:text-white transition-colors duration-300"
-            aria-label="Previous Track"
-          >
-            <SkipBack size={18} strokeWidth={1.5} />
-          </button>
-          
-          <button 
-            onClick={toggleMusic}
-            className="flex items-center justify-center w-8 h-8 text-white/50 hover:text-white transition-colors duration-300"
-            aria-label="Toggle Music"
-          >
-            {isPlaying ? <Pause size={18} strokeWidth={1.5} /> : <Play size={18} strokeWidth={1.5} className="ml-0.5" />}
-          </button>
+            <button 
+              onClick={handlePrev}
+              className="text-white/50 hover:text-white transition-colors duration-300 p-2.5 -m-2.5 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+              aria-label="Previous Track"
+            >
+              <SkipBack size={18} strokeWidth={1.5} />
+            </button>
+            
+            <button 
+              onClick={toggleMusic}
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] text-white/50 hover:text-white transition-colors duration-300 touch-manipulation cursor-pointer"
+              aria-label="Toggle Music"
+            >
+              {isPlaying ? <Pause size={18} strokeWidth={1.5} /> : <Play size={18} strokeWidth={1.5} className="ml-0.5" />}
+            </button>
 
-          <button 
-            id="next-track-btn"
-            onClick={handleNext}
-            className="text-white/50 hover:text-white transition-colors duration-300"
-            aria-label="Next Track"
-          >
-            <SkipForward size={18} strokeWidth={1.5} />
-          </button>
-        </div>
-      </nav>
+            <button 
+              id="next-track-btn"
+              onClick={handleNext}
+              className="text-white/50 hover:text-white transition-colors duration-300 p-2.5 -m-2.5 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+              aria-label="Next Track"
+            >
+              <SkipForward size={18} strokeWidth={1.5} />
+            </button>
+          </div>
+        );
+
+        if (pathname === "/blog") {
+          return controls;
+        }
+
+        if (homeTarget) {
+          return createPortal(controls, homeTarget);
+        }
+
+        return null;
+      })()}
     </>
   );
 }
