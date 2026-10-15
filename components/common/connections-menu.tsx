@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, X } from "lucide-react";
-import { SiGithub, SiDiscord, SiPinterest, SiInstagram, SiSpotify, SiAnilist } from "react-icons/si";
+import { SiGithub, SiDiscord, SiSubstack, SiInstagram, SiSpotify, SiAnilist } from "react-icons/si";
 import MagneticButton from "./magnetic-button";
 
 const SerializdIcon = ({ size = 20 }: { size?: number }) => (
@@ -40,7 +40,7 @@ const ChaosPrepIcon = ({ size = 20 }: { size?: number }) => (
 const socials = [
   { name: "github", label: "GitHub", url: "https://github.com/dsuryansh2009", icon: <SiGithub size={20} /> },
   { name: "discord", label: "Discord", url: "https://discordapp.com/users/d.dsuryansh", icon: <SiDiscord size={20} /> },
-  { name: "pinterest", label: "Pinterest", url: "https://pinterest.com/yourusername", icon: <SiPinterest size={20} /> },
+  { name: "substack", label: "Substack", url: "https://substack.com/@ilikehedgehogs", icon: <SiSubstack size={20} /> },
   { name: "instagram", label: "Instagram", url: "https://instagram.com/hedgehog_glazer", icon: <SiInstagram size={20} /> },
   { name: "spotify", label: "Spotify", url: "https://open.spotify.com/user/314vp6s4axooafqfsu43k3tj55xm?si=97cdf9922a2e45b1", icon: <SiSpotify size={20} /> },
   { name: "anilist", label: "AniList", url: "https://anilist.co/user/Dsuryansh/", icon: <SiAnilist size={20} /> },
