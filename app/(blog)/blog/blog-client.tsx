@@ -47,7 +47,8 @@ export default function BlogClient() {
   const handlePostCreated = async (newPost: MicroPost) => {
     await createPostAction({
       content: newPost.content,
-      authorName: newPost.authorName || "Anonymous"
+      authorName: newPost.authorName || "Anonymous",
+      media: newPost.media,
     });
     await fetchPosts(activeTab);
   };

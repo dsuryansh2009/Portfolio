@@ -14,6 +14,7 @@ import DiscordWidget from "@/components/common/discord-widget";
 import HoverImageReveal from "@/components/common/hover-image-reveal";
 import FlipGallery from "@/components/common/flip-gallery";
 import ProjectsShowcase from "@/components/common/projects-showcase";
+import MinecraftAchievement from "@/components/common/minecraft-achievement";
 import ScrollProgress from "@/components/common/scroll-progress";
 import { useLenis } from "lenis/react";
 import { CommunityScribbles } from "@/components/blog/community-scribbles";
@@ -49,6 +50,8 @@ export default function PortfolioClient({
   const [featuredScribbles, setFeaturedScribbles] = useState<any[]>(initialScribbles);
   const [showExtras, setShowExtras] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showMcAchievement, setShowMcAchievement] = useState(false);
+  const mcAchievementShownRef = useRef(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -426,7 +429,16 @@ export default function PortfolioClient({
                     {folders.map((f) => (
                       <button
                         key={f.name}
-                        onClick={() => setActiveFolder(f.name)}
+                        onClick={() => {
+                          setActiveFolder(f.name);
+                          if (
+                            f.name?.toLowerCase().includes("mean me") &&
+                            !mcAchievementShownRef.current
+                          ) {
+                            mcAchievementShownRef.current = true;
+                            setTimeout(() => setShowMcAchievement(true), 600);
+                          }
+                        }}
                         className="relative group overflow-hidden rounded-2xl aspect-square bg-white/5 border border-white/10 active:scale-95 transition-transform duration-200"
                       >
                         {(f.coverImage || f.images?.[0]?.imageUrl) && (
@@ -452,8 +464,17 @@ export default function PortfolioClient({
                     text: f.name,
                     image: { src: f.coverImage || f.images?.[0]?.imageUrl || "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/8e0d22a8-ac82-4893-90d8-3403f80ec600/w=800", alt: f.name },
                   }))} 
-                  onItemClick={(folder: string) => setActiveFolder(folder)} 
-                  offsetX={400} 
+                  onItemClick={(folder: string) => {
+                    setActiveFolder(folder);
+                    if (
+                      folder?.toLowerCase().includes("mean me") &&
+                      !mcAchievementShownRef.current
+                    ) {
+                      mcAchievementShownRef.current = true;
+                      setTimeout(() => setShowMcAchievement(true), 600);
+                    }
+                  }}
+                  offsetX={400}
                 />
               )
             ) : (
@@ -486,6 +507,10 @@ export default function PortfolioClient({
           </div>
         </section>
       )}
+      <MinecraftAchievement
+        show={showMcAchievement}
+        onDone={() => setShowMcAchievement(false)}
+      />
     </main>
   );
 }
