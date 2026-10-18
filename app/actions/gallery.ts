@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { v2 as cloudinary } from "cloudinary";
 import { auth } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -89,13 +90,16 @@ export async function createFolderAction(data: { name: string, description?: str
     throw new Error("Folder with this name already exists");
   }
 
-  return prisma.galleryFolder.create({
+  const folder = await prisma.galleryFolder.create({
     data: {
       name: data.name,
       slug,
       description: data.description,
     }
   });
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  return folder;
 }
 
 export async function updateFolderAction(id: string, data: { name?: string, description?: string, coverImage?: string }) {
@@ -107,13 +111,16 @@ export async function updateFolderAction(id: string, data: { name?: string, desc
     slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
   }
   
-  return prisma.galleryFolder.update({
+  const updated = await prisma.galleryFolder.update({
     where: { id },
     data: {
       ...data,
       slug: slug || undefined,
     }
   });
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  return updated;
 }
 
 export async function deleteFolderAction(id: string) {
@@ -131,7 +138,10 @@ export async function deleteFolderAction(id: string) {
     }
   }
   
-  return prisma.galleryFolder.delete({ where: { id } });
+  const deleted = await prisma.galleryFolder.delete({ where: { id } });
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  return deleted;
 }
 
 export async function getCloudinarySignatureAction() {
@@ -164,17 +174,23 @@ export async function saveGalleryImageAction(data: {
   const session = await auth();
   if (!session || session.user?.email !== process.env.ADMIN_EMAIL) throw new Error("Unauthorized");
 
-  return prisma.galleryImage.create({ data });
+  const img = await prisma.galleryImage.create({ data });
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  return img;
 }
 
 export async function updateImageAction(id: string, data: { title?: string, description?: string }) {
   const session = await auth();
   if (!session || session.user?.email !== process.env.ADMIN_EMAIL) throw new Error("Unauthorized");
 
-  return prisma.galleryImage.update({
+  const img = await prisma.galleryImage.update({
     where: { id },
     data
   });
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  return img;
 }
 
 export async function deleteImageAction(id: string) {
@@ -190,7 +206,10 @@ export async function deleteImageAction(id: string) {
     console.error("Failed to delete from cloudinary", e);
   }
 
-  return prisma.galleryImage.delete({ where: { id } });
+  const deleted = await prisma.galleryImage.delete({ where: { id } });
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  return deleted;
 }
 
 export async function reorderFoldersAction(folderIds: string[]) {
@@ -216,4 +235,6 @@ export async function reorderImagesAction(imageIds: string[]) {
       data: { displayOrder: i }
     });
   }
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
 }

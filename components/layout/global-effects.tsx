@@ -14,8 +14,10 @@ export default function GlobalEffects() {
     setHasFinePointer(window.matchMedia("(pointer: fine)").matches);
   }, []);
 
+  if (isBlog) return null;
+
   return (
-    <div style={{ display: isBlog ? "none" : "block" }}>
+    <div>
       <Hairline
         style={{
           position: "fixed",

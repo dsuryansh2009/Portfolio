@@ -5,7 +5,7 @@ import { getAbout } from "@/app/actions/about";
 import { getFeaturedScribblesAction } from "@/app/actions/scribble";
 import { getProjects } from "@/app/actions/project";
 
-export const dynamic = "force-dynamic"
+export const revalidate = 60;
 
 export default async function PortfolioPage() {
   const jsonLd = {

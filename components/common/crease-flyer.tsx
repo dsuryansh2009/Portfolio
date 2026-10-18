@@ -732,6 +732,7 @@ class FlyerScene {
     private lastT = 0
     private disposed = false
     private visible = true
+    private isLoopRunning = false
     private observer: IntersectionObserver | null = null
 
     private tl = { phase: "enter" as Phase, t: 0, index: 0, cycle: 0, advance: false }
@@ -1051,7 +1052,15 @@ class FlyerScene {
 
         if (typeof IntersectionObserver !== "undefined") {
             this.observer = new IntersectionObserver((entries) => {
-                this.visible = entries.some((e) => e.isIntersecting)
+                const nowVisible = entries.some((e) => e.isIntersecting)
+                if (nowVisible !== this.visible) {
+                    this.visible = nowVisible
+                    if (nowVisible) {
+                        this.startLoop()
+                    } else {
+                        this.stopLoop()
+                    }
+                }
             })
             this.observer.observe(node)
         }
@@ -1101,16 +1110,19 @@ class FlyerScene {
         this.draw(1)
     }
 
-    start() {
-        this.attach()
+    private startLoop() {
+        if (this.disposed || !this.visible || this.isLoopRunning) return
+        this.isLoopRunning = true
         this.lastT = performance.now()
         const loop = () => {
-            if (this.disposed) return
+            if (this.disposed || !this.visible) {
+                this.isLoopRunning = false
+                return
+            }
             this.frameId = requestAnimationFrame(loop)
             const now = performance.now()
             let dt = (now - this.lastT) / 1000
             this.lastT = now
-            if (!this.visible) return
             if (!isFinite(dt) || dt < 0) dt = 0
 
             if (dt > 0.05) dt = 0.05
@@ -1120,9 +1132,22 @@ class FlyerScene {
         this.frameId = requestAnimationFrame(loop)
     }
 
+    private stopLoop() {
+        this.isLoopRunning = false
+        if (this.frameId) {
+            cancelAnimationFrame(this.frameId)
+            this.frameId = 0
+        }
+    }
+
+    start() {
+        this.attach()
+        this.startLoop()
+    }
+
     dispose() {
         this.disposed = true
-        cancelAnimationFrame(this.frameId)
+        this.stopLoop()
         this.detach()
         this.geometry.dispose()
         this.material.dispose()

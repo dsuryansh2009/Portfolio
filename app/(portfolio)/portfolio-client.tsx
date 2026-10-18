@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pen, ArrowUp, Mail } from "lucide-react";
 import SparkleButton from "@/components/common/sparkle-button";
 import MosaicLens from "@/components/common/mosaic-lens";
 import IOSMessageList from "@/components/common/ios-message-list";
@@ -18,6 +18,8 @@ import MinecraftAchievement from "@/components/common/minecraft-achievement";
 import ScrollProgress from "@/components/common/scroll-progress";
 import { useLenis } from "lenis/react";
 import { CommunityScribbles } from "@/components/blog/community-scribbles";
+import { LeaveScribble } from "@/components/blog/leave-scribble";
+import OverscrollContainer from "@/components/common/overscroll-container";
 
 let hasPlayedIntro = false;
 
@@ -49,9 +51,63 @@ export default function PortfolioClient({
   const [aboutContent, setAboutContent] = useState<string>(initialAboutContent);
   const [featuredScribbles, setFeaturedScribbles] = useState<any[]>(initialScribbles);
   const [showExtras, setShowExtras] = useState(false);
+  const [isScribbleOpen, setIsScribbleOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showMcAchievement, setShowMcAchievement] = useState(false);
   const mcAchievementShownRef = useRef(false);
+  const lenis = useLenis();
+  const footerRef = useRef<HTMLElement>(null);
+  const footerTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resetFooterTimer = useCallback(() => {
+    if (footerTimerRef.current) {
+      clearTimeout(footerTimerRef.current);
+      footerTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isFullyBlack || activeFolder || showExtras) {
+      resetFooterTimer();
+      return;
+    }
+
+    const footerEl = footerRef.current;
+    if (!footerEl) return;
+
+    const startTimer = () => {
+      resetFooterTimer();
+      footerTimerRef.current = setTimeout(() => {
+        if (lenis) {
+          lenis.scrollTo("#gallery", { duration: 1.4 });
+        } else {
+          const galleryEl = document.getElementById("gallery");
+          if (galleryEl) {
+            galleryEl.scrollIntoView({ behavior: "smooth" });
+          }
+        }
+      }, 5000);
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          startTimer();
+        } else {
+          resetFooterTimer();
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(footerEl);
+
+    return () => {
+      observer.disconnect();
+      resetFooterTimer();
+    };
+  }, [isFullyBlack, activeFolder, showExtras, lenis, resetFooterTimer]);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -59,6 +115,7 @@ export default function PortfolioClient({
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
+
 
   useEffect(() => {
     if (initialActiveFolder || (typeof window !== "undefined" && window.location.hash && window.location.hash !== "#home")) {
@@ -106,7 +163,21 @@ export default function PortfolioClient({
     };
   }, [initialActiveFolder]);
 
-  const lenis = useLenis();
+  useEffect(() => {
+    if (showExtras) {
+      if (lenis) lenis.stop();
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else if (introStep === "finished") {
+      if (lenis) lenis.start();
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [showExtras, lenis, introStep]);
 
   const introStepRef = useRef(introStep);
   useEffect(() => {
@@ -297,9 +368,11 @@ export default function PortfolioClient({
         </div>
       )}
 
-      {/* Main Home Section */}
-      <section 
-        id="home"
+      {/* Overscroll Container: allows scrolling further than boundary and smoothly glides back to rest without bounce */}
+      <OverscrollContainer disabled={!isFullyBlack || showExtras || !!activeFolder}>
+        {/* Main Home Section */}
+        <section 
+          id="home"
         className="relative z-10 flex h-screen w-full items-center justify-center p-4 sm:p-8 bg-black"
       >
         <h2 className="sr-only">Home</h2>
@@ -483,30 +556,149 @@ export default function PortfolioClient({
           )}
         </section>
       )}
+
+      {/* Footer */}
+      {isFullyBlack && !activeFolder && (
+        <footer 
+          ref={footerRef}
+          onMouseMove={() => {
+            if (footerTimerRef.current) {
+              clearTimeout(footerTimerRef.current);
+              footerTimerRef.current = setTimeout(() => {
+                if (lenis) {
+                  lenis.scrollTo("#gallery", { duration: 1.4 });
+                } else {
+                  document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" });
+                }
+              }, 5000);
+            }
+          }}
+          className="relative z-10 w-full bg-[#000000] px-5 sm:px-8 md:px-24 py-10 pb-20 sm:pb-12 text-white"
+        >
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6 text-xs sm:text-sm">
+            {/* Left: Email, Socials & Extras link */}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 sm:gap-x-5 gap-y-2.5">
+              <a 
+                href="mailto:dsuryansh@proton.me" 
+                className="text-white/60 hover:text-white transition-colors duration-200"
+              >
+                dsuryansh@proton.me
+              </a>
+
+              <span className="text-white/20 select-none">·</span>
+
+              <a 
+                href="https://github.com/dsuryansh2009" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/60 hover:text-white transition-colors duration-200"
+              >
+                GitHub
+              </a>
+
+              <span className="text-white/20 select-none">·</span>
+
+              <a 
+                href="https://x.com/dsuryansh2009" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/60 hover:text-white transition-colors duration-200"
+              >
+                X
+              </a>
+
+              <span className="text-white/20 select-none">·</span>
+
+              <a
+                href="#extras"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.hash = "#extras";
+                  setShowExtras(true);
+                }}
+                className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer"
+              >
+                Leave a scribble
+              </a>
+            </div>
+
+            {/* Right: Copyright & Back to Top */}
+            <div className="flex items-center justify-center gap-4 sm:gap-6 text-white/50">
+              <span>© {new Date().getFullYear()} dsuryansh</span>
+
+              <span className="text-white/20 select-none">·</span>
+
+              <button
+                onClick={() => {
+                  if (lenis) {
+                    lenis.scrollTo(0, { duration: 1.2 });
+                  } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
+                className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-1 group"
+              >
+                <span>Back to top</span>
+                <span className="transition-transform duration-200 group-hover:-translate-y-0.5">↑</span>
+              </button>
+            </div>
+          </div>
+        </footer>
+      )}
+      </OverscrollContainer>
+
       {/* Extras Section Overlay */}
       {isFullyBlack && showExtras && (
-        <section id="extras" className="fixed inset-0 z-[100] overflow-y-auto bg-[#050505] px-5 sm:px-8 md:px-24 py-24">
+        <section id="extras" className="fixed inset-0 z-[100] overflow-y-auto bg-[#050505] px-5 sm:px-8 md:px-24 py-24 transform-gpu">
           <button 
             onClick={() => {
               window.history.pushState({}, '', '/');
               setShowExtras(false);
             }}
-            className="absolute top-20 sm:top-8 left-4 sm:left-8 md:left-12 z-[101] flex items-center gap-2 px-4 py-2 text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md"
+            className="absolute top-20 sm:top-8 left-4 sm:left-8 md:left-12 z-[101] flex items-center gap-2 px-4 py-2 text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md cursor-pointer"
           >
             <ArrowLeft size={20} />
             <span className="font-medium text-sm tracking-wide">Back</span>
           </button>
           
           <div className="w-full max-w-6xl mx-auto pt-16">
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-12 border-b border-white/10 pb-6 font-serif italic tracking-tight">Extras</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-white/10 pb-6 mb-12">
+              <div>
+                <h2 className="text-4xl md:text-6xl font-bold text-white font-serif italic tracking-tight">Extras</h2>
+                <p className="text-white/60 text-sm mt-2">Doodles, notes, and community scribbles.</p>
+              </div>
+              <button
+                onClick={() => setIsScribbleOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-semibold text-sm hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-white/10 cursor-pointer"
+              >
+                <Pen size={16} />
+                <span>Add Scribble</span>
+              </button>
+            </div>
+
             {featuredScribbles.length > 0 ? (
               <CommunityScribbles initialScribbles={featuredScribbles} />
             ) : (
-              <div className="text-white/50">No featured scribbles available yet.</div>
+              <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-white/10 rounded-2xl bg-white/[0.02]">
+                <p className="text-white/60 mb-5 text-sm">No featured scribbles available yet. Be the first to leave one!</p>
+                <button
+                  onClick={() => setIsScribbleOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-semibold text-sm hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-white/10 cursor-pointer"
+                >
+                  <Pen size={16} />
+                  <span>Add Scribble</span>
+                </button>
+              </div>
             )}
           </div>
         </section>
       )}
+
+      <LeaveScribble 
+        variant="modal-only"
+        isOpen={isScribbleOpen}
+        onOpenChange={setIsScribbleOpen}
+      />
       <MinecraftAchievement
         show={showMcAchievement}
         onDone={() => setShowMcAchievement(false)}

@@ -6,8 +6,32 @@ import { uploadScribbleAction } from "@/app/actions/scribble";
 import { Pen, Eraser, Undo2, Redo2, Trash2, X, Send, Palette } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function LeaveScribble() {
-  const [isOpen, setIsOpen] = useState(false);
+interface LeaveScribbleProps {
+  variant?: "card" | "button" | "modal-only";
+  buttonText?: string;
+  className?: string;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function LeaveScribble({
+  variant = "card",
+  buttonText,
+  className,
+  isOpen: controlledIsOpen,
+  onOpenChange,
+}: LeaveScribbleProps = {}) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isControlled = controlledIsOpen !== undefined;
+  const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
+
+  const setIsOpen = (open: boolean) => {
+    if (!isControlled) {
+      setInternalIsOpen(open);
+    }
+    onOpenChange?.(open);
+  };
+
   const canvasRef = useRef<ReactSketchCanvasRef>(null);
   
   const [strokeColor, setStrokeColor] = useState("#ffffff");
@@ -65,34 +89,51 @@ export function LeaveScribble() {
 
   return (
     <>
-      <div className="bg-zinc-900/50 backdrop-blur-md rounded-2xl p-6 border border-white/10 flex flex-col items-center justify-center text-center max-w-2xl mx-auto my-12">
-        <h3 className="text-xl font-bold text-white mb-2">Leave a Scribble</h3>
-        <p className="text-white/60 text-sm mb-6 max-w-md">
-          Draw something cool, leave a note, or just doodle. Your creation will be reviewed and featured in our community gallery!
-        </p>
+      {variant === "card" && (
+        <div className={`bg-zinc-900/50 backdrop-blur-md rounded-2xl p-6 border border-white/10 flex flex-col items-center justify-center text-center max-w-2xl mx-auto my-12 ${className || ""}`}>
+          <h3 className="text-xl font-bold text-white mb-2">Leave a Scribble</h3>
+          <p className="text-white/60 text-sm mb-6 max-w-md">
+            Draw something cool, leave a note, or just doodle. Your creation will be reviewed and featured in our community gallery!
+          </p>
+          <button
+            onClick={handleOpen}
+            className="bg-white text-black px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 transition-colors flex items-center gap-2 text-sm cursor-pointer"
+          >
+            <Pen size={16} /> {buttonText || "Open Canvas"}
+          </button>
+        </div>
+      )}
+
+      {variant === "button" && (
         <button
           onClick={handleOpen}
-          className="bg-white text-black px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 transition-colors flex items-center gap-2 text-sm"
+          className={
+            className ||
+            "inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-semibold text-sm hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-white/10 cursor-pointer"
+          }
         >
-          <Pen size={16} /> Open Canvas
+          <Pen size={16} />
+          <span>{buttonText || "Add Scribble"}</span>
         </button>
-      </div>
+      )}
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              transition={{ duration: 0.15 }}
+              className="absolute inset-0 bg-black/85"
               onClick={handleClose}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-3xl bg-zinc-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+              exit={{ opacity: 0, scale: 0.98, y: 8 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="relative w-full max-w-3xl bg-zinc-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10 transform-gpu will-change-transform"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10 bg-zinc-900/50">
@@ -165,13 +206,17 @@ export function LeaveScribble() {
 
               {/* Canvas Area */}
               <div className="bg-black/50 p-4">
-                <div className="bg-zinc-900 rounded-xl overflow-hidden border border-white/5 shadow-inner" style={{ height: "400px" }}>
+                <div 
+                  className="bg-zinc-900 rounded-xl overflow-hidden border border-white/5 shadow-inner touch-none select-none relative" 
+                  style={{ height: "400px" }}
+                >
                   <ReactSketchCanvas
                     ref={canvasRef}
                     strokeWidth={strokeWidth}
                     strokeColor={strokeColor}
                     eraserWidth={strokeWidth * 2}
                     canvasColor="transparent"
+                    withTimestamp={false}
                     className="w-full h-full cursor-crosshair"
                     style={{ border: 'none' }}
                   />

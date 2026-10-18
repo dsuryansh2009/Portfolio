@@ -187,10 +187,18 @@ export default function Navbar() {
     }
     const updateTarget = () => {
       const el = document.getElementById("home-music-controls");
-      if (el) setHomeTarget(el);
+      if (el) {
+        setHomeTarget(el);
+        return true;
+      }
+      return false;
     };
-    updateTarget();
-    const interval = setInterval(updateTarget, 200);
+    if (updateTarget()) return;
+    const interval = setInterval(() => {
+      if (updateTarget()) {
+        clearInterval(interval);
+      }
+    }, 200);
     return () => clearInterval(interval);
   }, [pathname]);
 
@@ -209,35 +217,43 @@ export default function Navbar() {
     lastScrollY.current = window.scrollY;
     setIsAtTop(window.scrollY <= 20);
 
+    let ticking = false;
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const diff = currentScrollY - lastScrollY.current;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          const diff = currentScrollY - lastScrollY.current;
 
-      if (currentScrollY <= 20) {
-        setIsAtTop(true);
-        setIsVisible(true);
-      } else {
-        setIsAtTop(false);
-
-        // Ignore overscroll bouncing at bottom of page
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        if (currentScrollY > maxScroll) {
-          return;
-        }
-
-        // Require meaningful scroll delta to avoid jitter
-        if (Math.abs(diff) > 6) {
-          if (diff > 0) {
-            // Scrolling down -> hide navbar
-            setIsVisible(false);
-          } else {
-            // Scrolling up -> show navbar
+          if (currentScrollY <= 20) {
+            setIsAtTop(true);
             setIsVisible(true);
-          }
-        }
-      }
+          } else {
+            setIsAtTop(false);
 
-      lastScrollY.current = currentScrollY;
+            // Ignore overscroll bouncing at bottom of page
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+            if (currentScrollY > maxScroll) {
+              ticking = false;
+              return;
+            }
+
+            // Require meaningful scroll delta to avoid jitter
+            if (Math.abs(diff) > 6) {
+              if (diff > 0) {
+                // Scrolling down -> hide navbar
+                setIsVisible(false);
+              } else {
+                // Scrolling up -> show navbar
+                setIsVisible(true);
+              }
+            }
+          }
+
+          lastScrollY.current = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });

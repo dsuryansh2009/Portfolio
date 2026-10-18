@@ -3,32 +3,38 @@ import { Geist, Geist_Mono, Inter, Lora, Martel } from "next/font/google";
 import "@/styles/globals.css";
 import GlobalEffects from "@/components/layout/global-effects";
 import SmoothScroll from "@/components/layout/smooth-scroll";
+import MobileDeviceWarning from "@/components/common/mobile-device-warning";
 import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const lora = Lora({
   variable: "--font-lora",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const martel = Martel({
   variable: "--font-martel",
   weight: ["700", "800"],
   subsets: ["devanagari", "latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -57,7 +63,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "dsuryansh",
     description: "Personal portfolio of dsuryansh showcasing AI projects, blogs, creative work, photography, sketches, and experiments with technology.",
-    creator: "@dsuryansh",
+    creator: "@dsuryansh2009",
   },
 
   manifest: "/manifest.json",
@@ -82,6 +88,7 @@ export default function RootLayout({
       <body className="bg-[#050505] overflow-x-hidden min-h-screen">
         <SmoothScroll>
           <GlobalEffects />
+          <MobileDeviceWarning />
           {children}
           <Analytics />
         </SmoothScroll>

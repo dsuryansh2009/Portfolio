@@ -107,6 +107,7 @@ export async function toggleScribbleFeatureAction(id: string, isFeatured: boolea
     });
     revalidatePath("/admin/scribbles");
     revalidatePath("/blog");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Failed to toggle feature:", error);
