@@ -575,72 +575,81 @@ export default function PortfolioClient({
           }}
           className="relative z-10 w-full bg-[#000000] px-5 sm:px-8 md:px-24 py-10 pb-20 sm:pb-12 text-white"
         >
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6 text-xs sm:text-sm">
-            {/* Left: Email, Socials & Extras link */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 sm:gap-x-5 gap-y-2.5">
-              <a 
-                href="mailto:dsuryansh@proton.me" 
-                className="text-white/60 hover:text-white transition-colors duration-200"
-              >
-                dsuryansh@proton.me
-              </a>
+          <div className="max-w-6xl mx-auto flex flex-col gap-6 text-xs sm:text-sm">
+            {/* Main Row: Links on left, Copyright & Back to Top on right */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              {/* Left: Email, Socials & Extras link */}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 sm:gap-x-5 gap-y-2">
+                <a 
+                  href="mailto:dsuryansh@proton.me" 
+                  className="text-white/60 hover:text-white transition-colors duration-200"
+                >
+                  dsuryansh@proton.me
+                </a>
 
-              <span className="text-white/20 select-none">·</span>
+                <span className="text-white/20 select-none">·</span>
 
-              <a 
-                href="https://github.com/dsuryansh2009" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-white/60 hover:text-white transition-colors duration-200"
-              >
-                GitHub
-              </a>
+                <a 
+                  href="https://github.com/dsuryansh2009" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white/60 hover:text-white transition-colors duration-200"
+                >
+                  GitHub
+                </a>
 
-              <span className="text-white/20 select-none">·</span>
+                <span className="text-white/20 select-none">·</span>
 
-              <a 
-                href="https://x.com/dsuryansh2009" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-white/60 hover:text-white transition-colors duration-200"
-              >
-                X
-              </a>
+                <a 
+                  href="https://x.com/dsuryansh2009" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white/60 hover:text-white transition-colors duration-200"
+                >
+                  X
+                </a>
 
-              <span className="text-white/20 select-none">·</span>
+                <span className="text-white/20 select-none">·</span>
 
-              <a
-                href="#extras"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.hash = "#extras";
-                  setShowExtras(true);
-                }}
-                className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer"
-              >
-                Leave a scribble
-              </a>
+                <a
+                  href="#extras"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.hash = "#extras";
+                    setShowExtras(true);
+                  }}
+                  className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer"
+                >
+                  Leave a scribble
+                </a>
+              </div>
+
+              {/* Right: Copyright & Back to Top */}
+              <div className="flex items-center justify-center gap-4 sm:gap-5 text-white/50">
+                <span>© {new Date().getFullYear()} dsuryansh</span>
+
+                <span className="text-white/20 select-none">·</span>
+
+                <button
+                  onClick={() => {
+                    if (lenis) {
+                      lenis.scrollTo(0, { duration: 1.2 });
+                    } else {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                  className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-1 group"
+                >
+                  <span>Back to top</span>
+                  <span className="transition-transform duration-200 group-hover:-translate-y-0.5">↑</span>
+                </button>
+              </div>
             </div>
 
-            {/* Right: Copyright & Back to Top */}
-            <div className="flex items-center justify-center gap-4 sm:gap-6 text-white/50">
-              <span>© {new Date().getFullYear()} dsuryansh</span>
-
-              <span className="text-white/20 select-none">·</span>
-
-              <button
-                onClick={() => {
-                  if (lenis) {
-                    lenis.scrollTo(0, { duration: 1.2 });
-                  } else {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }
-                }}
-                className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-1 group"
-              >
-                <span>Back to top</span>
-                <span className="transition-transform duration-200 group-hover:-translate-y-0.5">↑</span>
-              </button>
+            {/* Bottom Sub-row: Vibecoding & WIP notice */}
+            <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 text-[11px] sm:text-xs text-white/40">
+              <span className="text-white/50">Made with vibecoding</span>
+              <span className="text-white/35">Work in progress — website isn&apos;t fully finished yet</span>
             </div>
           </div>
         </footer>
