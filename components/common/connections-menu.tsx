@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, X } from "lucide-react";
 import { SiGithub, SiDiscord, SiSubstack, SiInstagram, SiSpotify, SiAnilist } from "react-icons/si";
@@ -50,139 +51,188 @@ const socials = [
 
 export default function ConnectionsMenu() {
   const [isOpen, setIsOpen] = useState(false);
-  // Detect mobile to use grid layout instead of horizontal spread
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+    setMounted(true);
+    const mql = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
   }, []);
 
-  // On mobile: use a grid popup, on desktop: horizontal spread
-  const iconSize = isMobile ? 48 : 56;
-  const itemSpacing = isMobile ? 56 : 65;
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
+  const itemSpacing = 65;
 
   return (
-    <div className="relative flex items-center justify-center h-[120px] w-full max-w-5xl mx-auto">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <AnimatePresence>
-          {!isOpen && (
-            <motion.div
-              key="button"
-              className="absolute z-50"
-              initial={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.1, opacity: 0 }}
-              transition={{ duration: 0.25 }}
-            >
-              <MagneticButton onClick={() => setIsOpen(true)}>
-                Connections
-              </MagneticButton>
-            </motion.div>
-          )}
-
-          {isOpen && !isMobile && (
-            <>
-              {/* Desktop: horizontal spread */}
-              {/* The Center Close Button */}
-              <motion.button
-                key="close-button"
-                onClick={() => setIsOpen(false)}
-                className="absolute flex items-center justify-center w-14 h-14 rounded-full bg-black text-white hover:bg-red-600 hover:text-white transition-colors duration-300 z-50"
-                initial={{ x: 0, scale: 0 }}
-                animate={{ x: 0, scale: 1 }}
-                exit={{ x: 0, scale: 0 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 18,
-                  mass: 0.8,
-                  delay: 0,
-                }}
+    <>
+      <div className="relative flex items-center justify-center h-[120px] w-full max-w-5xl mx-auto">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <AnimatePresence>
+            {!isOpen && (
+              <motion.div
+                key="button"
+                className="absolute z-50"
+                initial={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.1, opacity: 0 }}
+                transition={{ duration: 0.25 }}
               >
-                <X size={24} />
-              </motion.button>
+                <MagneticButton onClick={() => setIsOpen(true)}>
+                  Connections
+                </MagneticButton>
+              </motion.div>
+            )}
 
-              {/* The Social Icons */}
-              {socials.map((social, i) => {
-                const pos = i < 4 ? i - 4 : i - 3;
-                const offset = pos * itemSpacing;
-                const delay = Math.abs(pos) * 0.05;
+            {isOpen && !isMobile && (
+              <>
+                {/* Desktop: horizontal spread */}
+                {/* The Center Close Button */}
+                <motion.button
+                  key="close-button"
+                  onClick={() => setIsOpen(false)}
+                  className="absolute flex items-center justify-center w-14 h-14 rounded-full bg-black text-white hover:bg-red-600 hover:text-white transition-colors duration-300 z-50"
+                  initial={{ x: 0, scale: 0 }}
+                  animate={{ x: 0, scale: 1 }}
+                  exit={{ x: 0, scale: 0 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 18,
+                    mass: 0.8,
+                    delay: 0,
+                  }}
+                  aria-label="Close connections menu"
+                >
+                  <X size={24} />
+                </motion.button>
 
-                return (
-                  <motion.a
-                    key={social.name}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="absolute flex items-center justify-center w-14 h-14 rounded-full bg-white text-black hover:bg-[#0022FF] hover:text-white transition-colors duration-300 group"
-                    initial={{ x: 0, scale: 0 }}
-                    animate={{ x: offset, scale: 1 }}
-                    exit={{ x: 0, scale: 0, opacity: 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 18,
-                      mass: 0.8,
-                      delay: delay,
-                    }}
-                  >
-                    {social.icon}
+                {/* The Social Icons */}
+                {socials.map((social, i) => {
+                  const pos = i < 4 ? i - 4 : i - 3;
+                  const offset = pos * itemSpacing;
+                  const delay = Math.abs(pos) * 0.05;
 
-                    {/* Tooltip */}
-                    <span className="absolute -top-14 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-200 bg-neutral-900 text-white text-xs px-3 py-1.5 rounded-full whitespace-nowrap pointer-events-none flex items-center gap-1 shadow-xl origin-bottom">
-                      {social.label} <ArrowUpRight size={12} className="opacity-60" strokeWidth={2} />
-                    </span>
-                  </motion.a>
-                );
-              })}
-            </>
-          )}
+                  return (
+                    <motion.a
+                      key={social.name}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute flex items-center justify-center w-14 h-14 rounded-full bg-white text-black hover:bg-[#0022FF] hover:text-white transition-colors duration-300 group"
+                      initial={{ x: 0, scale: 0 }}
+                      animate={{ x: offset, scale: 1 }}
+                      exit={{ x: 0, scale: 0, opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 18,
+                        mass: 0.8,
+                        delay: delay,
+                      }}
+                    >
+                      {social.icon}
 
-          {isOpen && isMobile && (
-            <motion.div
-              key="mobile-grid"
-              className="absolute z-50 flex flex-col items-center gap-3"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ type: "spring", stiffness: 300, damping: 22 }}
-            >
-              {/* Close button */}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-black border border-white/20 text-white hover:bg-red-600 transition-colors duration-300 mb-1"
-              >
-                <X size={18} />
-              </button>
-              {/* Grid of icons */}
-              <div className="grid grid-cols-4 gap-3">
-                {socials.map((social, i) => (
-                  <motion.a
-                    key={social.name}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center w-12 h-12 rounded-full bg-white text-black hover:bg-[#0022FF] hover:text-white transition-colors duration-300"
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                      delay: i * 0.04,
-                    }}
-                    title={social.label}
-                  >
-                    {social.icon}
-                  </motion.a>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                      {/* Tooltip */}
+                      <span className="absolute -top-14 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-200 bg-neutral-900 text-white text-xs px-3 py-1.5 rounded-full whitespace-nowrap pointer-events-none flex items-center gap-1 shadow-xl origin-bottom">
+                        {social.label} <ArrowUpRight size={12} className="opacity-60" strokeWidth={2} />
+                      </span>
+                    </motion.a>
+                  );
+                })}
+              </>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+
+      {/* Mobile Modal via Portal to avoid clipping/transform/stacking issues */}
+      {mounted && isMobile && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 pointer-events-none">
+              {/* Dimmed backdrop */}
+              <motion.div
+                key="mobile-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setIsOpen(false)}
+                className="fixed inset-0 bg-black/80 backdrop-blur-md pointer-events-auto cursor-pointer"
+              />
+
+              {/* Elevated Floating Card - perfectly centered */}
+              <motion.div
+                key="mobile-card"
+                initial={{ scale: 0.92, opacity: 0, y: 12 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.92, opacity: 0, y: 12 }}
+                transition={{ type: "spring", stiffness: 350, damping: 26 }}
+                className="relative pointer-events-auto w-full max-w-[340px] bg-[#121614]/95 border border-white/15 rounded-3xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex flex-col gap-5 text-white z-10"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between px-0.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#84b897] animate-pulse" />
+                    <span className="text-xs font-semibold tracking-widest uppercase text-white/90">
+                      Connections
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
+                    aria-label="Close connections menu"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* 4x2 Grid of Socials */}
+                <div className="grid grid-cols-4 gap-y-4 gap-x-2 w-full place-items-center">
+                  {socials.map((social, i) => (
+                    <motion.a
+                      key={social.name}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col items-center justify-center gap-1.5 group p-1 w-full max-w-[68px]"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 350,
+                        damping: 24,
+                        delay: i * 0.03,
+                      }}
+                    >
+                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white text-black group-hover:bg-[#0022FF] group-hover:text-white group-active:scale-95 group-active:bg-[#0022FF] group-active:text-white transition-all duration-200 shadow-md">
+                        {social.icon}
+                      </div>
+                      <span className="text-[11px] font-medium text-white/70 group-hover:text-white transition-colors tracking-tight text-center truncate w-full">
+                        {social.label}
+                      </span>
+                    </motion.a>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </>
   );
 }
