@@ -1,27 +1,34 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, ArrowLeft, Music, FileText, Link as LinkIcon, ExternalLink } from "lucide-react";
+import { Calendar, ArrowLeft, Music, FileText, Link as LinkIcon, ExternalLink, Trash2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/navbar";
 import { BlogInteractions } from "@/components/blog/blog-interactions";
 import { CreatePost } from "@/components/blog/create-post";
-import { getPosts, createPostAction } from "@/app/actions/blog";
+import { getPosts, createPostAction, deletePostAction, checkIsAdminAction } from "@/app/actions/blog";
 import { MicroPost } from "@/data/blog";
 import { LeaveScribble } from "@/components/blog/leave-scribble";
 import { CommunityScribbles } from "@/components/blog/community-scribbles";
 import { getApprovedScribblesAction } from "@/app/actions/scribble";
 
-export default function BlogClient() {
+export default function BlogClient({ initialIsAdmin = false }: { initialIsAdmin?: boolean }) {
   const [displayedPosts, setDisplayedPosts] = useState<MicroPost[]>([]);
   const [activeTab, setActiveTab] = useState<"visitor" | "dsuryansh">("dsuryansh");
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(initialIsAdmin);
   
   // Easter egg admin state
   const [dsuryanshClicks, setdsuryanshClicks] = useState(0);
 
   const [scribbles, setScribbles] = useState<any[]>([]);
+
+  useEffect(() => {
+    checkIsAdminAction().then((status) => {
+      setIsAdmin(status);
+    });
+  }, []);
 
   const fetchPosts = async (tab: "visitor" | "dsuryansh") => {
     setIsLoading(true);
@@ -47,10 +54,22 @@ export default function BlogClient() {
   const handlePostCreated = async (newPost: MicroPost) => {
     await createPostAction({
       content: newPost.content,
-      authorName: newPost.authorName || "Anonymous",
+      authorName: newPost.authorName || (activeTab === "dsuryansh" ? "dsuryansh" : "Anonymous"),
       media: newPost.media,
+      link: newPost.link,
     });
     await fetchPosts(activeTab);
+  };
+
+  const handleDeletePost = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    try {
+      await deletePostAction(id);
+      await fetchPosts(activeTab);
+    } catch (err) {
+      console.error("Failed to delete post", err);
+      alert("Failed to delete post");
+    }
   };
 
   const handledsuryanshClick = () => {
@@ -60,8 +79,6 @@ export default function BlogClient() {
       window.location.href = "/admin";
     }
   };
-
-
 
   return (
     <main className="min-h-screen w-full bg-[#050505] text-white selection:bg-[#84b897] selection:text-black pb-32">
@@ -77,6 +94,24 @@ export default function BlogClient() {
       </Link>
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-24 md:pt-32">
+        {/* Admin Status Banner */}
+        {isAdmin && (
+          <div className="flex items-center justify-between bg-[#84b897]/10 border border-[#84b897]/30 rounded-2xl px-4 py-2.5 mb-8 text-xs">
+            <div className="flex items-center gap-2 text-[#84b897]">
+              <span className="w-2 h-2 rounded-full bg-[#84b897] animate-pulse" />
+              <span className="font-semibold text-white">Admin mode active</span>
+              <span className="text-white/50 hidden sm:inline">— You can create and manage posts directly</span>
+            </div>
+            <Link 
+              href="/admin" 
+              className="px-3 py-1 rounded-full bg-[#84b897]/20 hover:bg-[#84b897]/30 text-[#84b897] hover:text-white transition-colors font-medium text-xs flex items-center gap-1"
+            >
+              <span>Dashboard</span>
+              <span>→</span>
+            </Link>
+          </div>
+        )}
+
         {/* Toggle Slider */}
         <div className="flex bg-white/5 p-1 rounded-full relative w-64 mx-auto mb-12">
           <motion.div 
@@ -98,21 +133,35 @@ export default function BlogClient() {
           </button>
         </div>
 
-        {/* Create Post Section */}
+        {/* Create Post Section for dsuryansh tab (Admin only) */}
+        {activeTab === "dsuryansh" && isAdmin && (
+          <CreatePost 
+            isAdmin={true}
+            defaultAuthor="dsuryansh"
+            tab="dsuryansh"
+            onPostCreated={handlePostCreated} 
+          />
+        )}
+
+        {/* Create Post Section for Visitor tab */}
         {activeTab === "visitor" && (
           <>
-            <CreatePost onPostCreated={handlePostCreated} />
+            <CreatePost 
+              isAdmin={isAdmin}
+              defaultAuthor={isAdmin ? "dsuryansh" : ""}
+              tab="visitor"
+              onPostCreated={handlePostCreated} 
+            />
             <LeaveScribble />
             <CommunityScribbles initialScribbles={scribbles} />
           </>
         )}
 
-
         {/* Feed */}
         <div className="flex flex-col space-y-12">
           {isLoading ? (
             <div className="w-full text-center py-20 text-white/50">Loading posts...</div>
-          ) : displayedPosts.map((post, index) => (
+          ) : displayedPosts.map((post) => (
             <motion.article
               key={post.id}
               initial={{ opacity: 0, y: 30 }}
@@ -140,6 +189,16 @@ export default function BlogClient() {
                       <time dateTime={new Date(post.date).toISOString()}>{post.date}</time>
                     </div>
                   </div>
+
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDeletePost(post.id)}
+                      className="p-1.5 text-white/30 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                      title="Delete post (Admin)"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </header>
 
                 {/* Content */}
@@ -226,8 +285,6 @@ export default function BlogClient() {
           )}
         </div>
       </div>
-
-
     </main>
   );
 }

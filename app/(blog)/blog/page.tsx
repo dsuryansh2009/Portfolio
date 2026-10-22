@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import BlogClient from "./blog-client";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Blog & Thoughts",
@@ -16,6 +17,9 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
+  const session = await auth();
+  const isAdmin = !!(session?.user?.email && session.user.email === process.env.ADMIN_EMAIL);
+
   // Fetch posts for JSON-LD schema
   const posts = await prisma.post.findMany({
     orderBy: { createdAt: "desc" },
@@ -54,7 +58,7 @@ export default async function BlogPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <BlogClient />
+      <BlogClient initialIsAdmin={isAdmin} />
     </>
   );
 }

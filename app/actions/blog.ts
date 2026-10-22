@@ -59,6 +59,11 @@ export async function getPosts(type: "visitor" | "dsuryansh") {
 }
 
 
+export async function checkIsAdminAction(): Promise<boolean> {
+  const session = await auth();
+  return !!(session && session.user?.email && session.user.email === process.env.ADMIN_EMAIL);
+}
+
 export async function createPostAction(data: { content: string, authorName: string, media?: any[], link?: any }) {
   const session = await auth();
   const isAdmin = session && session.user?.email === process.env.ADMIN_EMAIL;
