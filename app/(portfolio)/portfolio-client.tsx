@@ -179,6 +179,18 @@ export default function PortfolioClient({
     };
   }, [showExtras, lenis, introStep]);
 
+  useEffect(() => {
+    if (!showExtras) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isScribbleOpen) {
+        window.history.pushState({}, '', '/');
+        setShowExtras(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showExtras, isScribbleOpen]);
+
   const introStepRef = useRef(introStep);
   useEffect(() => {
     introStepRef.current = introStep;
@@ -658,13 +670,17 @@ export default function PortfolioClient({
 
       {/* Extras Section Overlay */}
       {isFullyBlack && showExtras && (
-        <section id="extras" className="fixed inset-0 z-[100] overflow-y-auto bg-[#050505] px-5 sm:px-8 md:px-24 py-24 transform-gpu">
+        <section 
+          id="extras" 
+          data-lenis-prevent
+          className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-[#050505] px-5 sm:px-8 md:px-24 py-24"
+        >
           <button 
             onClick={() => {
               window.history.pushState({}, '', '/');
               setShowExtras(false);
             }}
-            className="absolute top-20 sm:top-8 left-4 sm:left-8 md:left-12 z-[101] flex items-center gap-2 px-4 py-2 text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md cursor-pointer"
+            className="fixed top-20 sm:top-8 left-4 sm:left-8 md:left-12 z-[101] flex items-center gap-2 px-4 py-2 text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md cursor-pointer"
           >
             <ArrowLeft size={20} />
             <span className="font-medium text-sm tracking-wide">Back</span>

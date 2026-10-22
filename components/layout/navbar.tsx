@@ -165,6 +165,15 @@ export default function Navbar() {
         e.preventDefault();
         handlersRef.current.handlePrev();
       } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const extrasEl = document.getElementById('extras');
+        if (extrasEl) {
+          e.preventDefault();
+          extrasEl.scrollBy({ 
+            top: e.key === 'ArrowDown' ? 300 : -300, 
+            behavior: 'smooth' 
+          });
+          return;
+        }
         e.preventDefault();
         const scrollAmount = window.innerHeight;
         window.scrollBy({ 
