@@ -391,7 +391,7 @@ export default function PortfolioClient({
         
         {(isFullyBlack || isIntroFadingOut) && (
           <>
-            <div className="absolute bottom-40 left-1/2 -translate-x-1/2 z-[1000] flex flex-col md:flex-row items-center gap-4 scale-[0.8] origin-bottom">
+            <div className="absolute bottom-40 left-1/2 -translate-x-1/2 z-[1000] flex flex-col md:flex-row items-center gap-4 scale-[0.8] origin-bottom transform-gpu [backface-visibility:hidden]">
               <MusicWidget />
               <DiscordWidget />
             </div>

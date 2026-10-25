@@ -87,7 +87,7 @@ export default function MusicWidget() {
     >
       {/* Hover Tooltip */}
       <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:-translate-y-1 transition-all duration-300 ease-out whitespace-nowrap z-50">
-        <div className="bg-[#121614]/95 text-[#a3b3ac] border border-[#26332a] text-xs px-3 py-1.5 rounded-full shadow-xl backdrop-blur-md flex items-center gap-1.5">
+        <div className="bg-[#121614]/95 text-[#a3b3ac] shadow-[inset_0_0_0_1px_#26332a,0_10px_25px_rgba(0,0,0,0.5)] text-xs px-3 py-1.5 rounded-full backdrop-blur-md flex items-center gap-1.5">
           <span>( dsuryansh music activity, also follow me on spotify 🥺 )</span>
         </div>
       </div>
@@ -95,9 +95,9 @@ export default function MusicWidget() {
       {/* Main Widget Card */}
       <div 
         title="( dsuryansh music activity, also follow me on spotify 🥺 )"
-        className="w-[320px] flex items-center gap-4 bg-[#151a17] border border-[#26332a] p-3 pr-8 rounded-2xl shadow-2xl transition-all duration-300 group-hover/widget:border-[#84b897]/40 group-hover/widget:shadow-[0_0_30px_rgba(132,184,151,0.15)] group-hover/widget:-translate-y-1"
+        className="w-[320px] flex items-center gap-4 bg-[#151a17] shadow-[inset_0_0_0_1px_#26332a,0_25px_50px_-12px_rgba(0,0,0,0.5)] p-3 pr-8 rounded-2xl overflow-hidden [background-clip:padding-box] transition-all duration-300 group-hover/widget:shadow-[inset_0_0_0_1px_rgba(132,184,151,0.4),0_0_30px_rgba(132,184,151,0.15)] group-hover/widget:-translate-y-1"
       >
-        <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900 border border-white/5">
+        <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
           {track.image ? (
             <img 
               src={track.image} 
