@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useLanyard } from "use-lanyard";
 import { useEffect, useState } from "react";
 
 // Replace this with your actual Discord ID
@@ -10,12 +9,131 @@ import { useEffect, useState } from "react";
 // Note: You MUST join the Lanyard Discord server for this to work: https://discord.gg/lanyard
 const DISCORD_ID = "973202333381038080"; 
 
+interface LanyardData {
+  discord_user: {
+    id: string;
+    username: string;
+    avatar: string | null;
+    discriminator?: string;
+  };
+  discord_status: "online" | "idle" | "dnd" | "offline";
+  activities: {
+    id: string;
+    name: string;
+    type: number;
+    state?: string;
+    details?: string;
+    application_id?: string;
+    assets?: {
+      large_image?: string;
+      large_text?: string;
+      small_image?: string;
+      small_text?: string;
+    };
+  }[];
+}
+
 export default function DiscordWidget() {
-  const lanyard = useLanyard(DISCORD_ID);
+  const [lanyard, setLanyard] = useState<LanyardData | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    let isMounted = true;
+    let heartbeatTimer: NodeJS.Timeout | null = null;
+    let pollTimer: NodeJS.Timeout | null = null;
+    let ws: WebSocket | null = null;
+
+    // 1. Initial & Polling REST fallback (bulletproof, never throws InvalidStateError)
+    const fetchPresence = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.success && json.data && isMounted) {
+          setLanyard(json.data);
+        }
+      } catch (e) {
+        // Silently catch network errors
+      }
+    };
+
+    fetchPresence();
+    pollTimer = setInterval(fetchPresence, 20000);
+
+    // 2. Real-time WebSocket with defensive guards against InvalidStateError
+    try {
+      ws = new WebSocket("wss://api.lanyard.rest/socket");
+
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.op === 1) {
+            // Hello opcode
+            const interval = message.d?.heartbeat_interval || 30000;
+            heartbeatTimer = setInterval(() => {
+              try {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                  ws.send(JSON.stringify({ op: 3 }));
+                }
+              } catch {}
+            }, interval);
+
+            // Subscribe
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(
+                JSON.stringify({
+                  op: 2,
+                  d: { subscribe_to_id: DISCORD_ID },
+                })
+              );
+            }
+          } else if (message.op === 0) {
+            // Event opcode
+            if (message.t === "INIT_STATE" || message.t === "PRESENCE_UPDATE") {
+              if (message.d && isMounted) {
+                setLanyard(message.d);
+              }
+            }
+          }
+        } catch {}
+      };
+
+      ws.onerror = () => {
+        // Socket error; fallback polling continues seamlessly
+      };
+
+      ws.onclose = () => {
+        if (heartbeatTimer) clearInterval(heartbeatTimer);
+      };
+    } catch {}
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchPresence();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      isMounted = false;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (pollTimer) clearInterval(pollTimer);
+      if (heartbeatTimer) clearInterval(heartbeatTimer);
+      if (ws) {
+        try {
+          ws.onclose = null;
+          ws.onerror = null;
+          ws.onmessage = null;
+          if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+            ws.close();
+          }
+        } catch {}
+      }
+    };
   }, []);
 
   if (!mounted || !lanyard) return null;
@@ -24,7 +142,6 @@ export default function DiscordWidget() {
   // or we can show whatever activity is active.
   // Activities[0] is usually the primary one (like VS Code, a game, etc.)
   const activity = lanyard.activities.find(a => a.type !== 2) || lanyard.activities[0];
-  const isOnline = lanyard.discord_status !== "offline";
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -42,7 +159,7 @@ export default function DiscordWidget() {
       rel="noopener noreferrer"
       initial={{ opacity: 0, y: 20, scale: 1 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.1 }} // Slight delay after music widget
+      transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.1 }}
       className="relative flex flex-col origin-bottom cursor-pointer group/discord"
     >
       {/* Hover Tooltip */}

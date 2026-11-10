@@ -20,6 +20,24 @@ import { useLenis } from "lenis/react";
 import { CommunityScribbles } from "@/components/blog/community-scribbles";
 import { LeaveScribble } from "@/components/blog/leave-scribble";
 import OverscrollContainer from "@/components/common/overscroll-container";
+import ClayRobot from "@/components/originkit/ui/clay-robot";
+import { motion, AnimatePresence } from "framer-motion";
+import { playRobotClickSound } from "@/lib/robot-sounds";
+
+const ROBOT_MESSAGES = [
+  "Beep boop! 👋 Welcome to my portfolio!",
+  "Don't poke me, it tickles! (⁠≧⁠◡⁠≦⁠)",
+  "I'm dsuryansh's clay bot companion! 🤖",
+  "Did you check out the scribbles in Extras yet? ✏️",
+  "Vibecoding all night... ☕",
+  "I'm keeping watch over the music player! 🎵",
+  "Fun fact: My entire 3D body is made of math! 📐",
+  "Look at my little waddle! ₍ᐢ.ˬ.ᐢ₎",
+  "Hop hop! ✨ Thanks for visiting!",
+  "Scroll down to explore my projects! 🚀",
+  "Drop dsuryansh an email below! 📬",
+  "You found my secret hop button! (⁠^⁠‿⁠^⁠)",
+];
 
 let hasPlayedIntro = false;
 
@@ -55,6 +73,27 @@ export default function PortfolioClient({
   const [isMobile, setIsMobile] = useState(false);
   const [showMcAchievement, setShowMcAchievement] = useState(false);
   const mcAchievementShownRef = useRef(false);
+  const [robotMessage, setRobotMessage] = useState<{ text: string; xPercent: number; id: number } | null>(null);
+  const robotMessageTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const robotMessageIndexRef = useRef(0);
+
+  const handleRobotClick = useCallback((info: { xPercent: number }) => {
+    playRobotClickSound();
+    if (robotMessageTimerRef.current) {
+      clearTimeout(robotMessageTimerRef.current);
+    }
+    const text = ROBOT_MESSAGES[robotMessageIndexRef.current % ROBOT_MESSAGES.length];
+    robotMessageIndexRef.current++;
+    setRobotMessage({
+      text,
+      xPercent: info.xPercent,
+      id: Date.now(),
+    });
+    robotMessageTimerRef.current = setTimeout(() => {
+      setRobotMessage(null);
+    }, 4000);
+  }, []);
+
   const lenis = useLenis();
   const footerRef = useRef<HTMLElement>(null);
   const footerTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -385,16 +424,60 @@ export default function PortfolioClient({
         {/* Main Home Section */}
         <section 
           id="home"
-        className="relative z-10 flex h-screen w-full items-center justify-center p-4 sm:p-8 bg-black"
-      >
-        <h2 className="sr-only">Home</h2>
-        
-        {(isFullyBlack || isIntroFadingOut) && (
-          <>
-            <div className="absolute bottom-40 left-1/2 -translate-x-1/2 z-[1000] flex flex-col md:flex-row items-center gap-4 scale-[0.8] origin-bottom transform-gpu [backface-visibility:hidden]">
-              <MusicWidget />
-              <DiscordWidget />
-            </div>
+          className="relative z-10 flex h-screen w-full items-center justify-center p-4 sm:p-8 bg-black"
+        >
+          <h2 className="sr-only">Home</h2>
+          
+          {(isFullyBlack || isIntroFadingOut) && (
+            <>
+              <div className="absolute bottom-40 left-1/2 -translate-x-1/2 z-[1000] flex flex-col md:flex-row items-center gap-4 scale-[0.8] origin-bottom transform-gpu [backface-visibility:hidden]">
+                {/* Clay Robot walking on top of widgets */}
+                <div className="absolute bottom-full mb-[-20px] left-0 right-0 h-[140px] pointer-events-auto z-20">
+                  {/* Floating speech bubble popup */}
+                  <AnimatePresence>
+                    {robotMessage && (
+                      <motion.div
+                        key={robotMessage.id}
+                        initial={{ opacity: 0, y: 8, scale: 0.8 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.85 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        style={{ left: `${robotMessage.xPercent}%` }}
+                        className="absolute bottom-[85%] -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap"
+                      >
+                        <div className="relative px-3.5 py-2 rounded-2xl bg-[#141816]/95 border border-[#2b3a30] text-[#f2f5f4] text-xs sm:text-sm font-medium shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_20px_rgba(132,184,151,0.15)] backdrop-blur-md flex items-center gap-2 select-none">
+                          <span>{robotMessage.text}</span>
+                          {/* Little speech tail pointing down to robot head */}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-[#2b3a30]" />
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#141816]" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <ClayRobot 
+                    transparent
+                    walk={true}
+                    wave={true}
+                    scale={85}
+                    onRobotClick={handleRobotClick}
+                    response={{
+                      track: "page",
+                      headTurn: 7,
+                      eyeTravel: 6,
+                      followSpeed: 6,
+                      hop: 6,
+                    }}
+                    background={{
+                      shadow: "#000000",
+                      shadowDepth: 50,
+                    }}
+                  />
+                </div>
+
+                <MusicWidget />
+                <DiscordWidget />
+              </div>
             <div className="absolute inset-x-0 bottom-12 flex justify-center z-[1010] pointer-events-none">
               <div className="pointer-events-auto">
                 <ConnectionsMenu />
