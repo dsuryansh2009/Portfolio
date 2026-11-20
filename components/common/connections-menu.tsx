@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, X } from "lucide-react";
-import { SiGithub, SiDiscord, SiSubstack, SiInstagram, SiSpotify, SiAnilist } from "react-icons/si";
+import { SiGithub, SiDiscord, SiSubstack, SiInstagram, SiSpotify, SiAnilist, SiThreads, SiLetterboxd } from "react-icons/si";
 import MagneticButton from "./magnetic-button";
 
 const SerializdIcon = ({ size = 20 }: { size?: number }) => (
@@ -42,9 +42,11 @@ const socials = [
   { name: "github", label: "GitHub", url: "https://github.com/dsuryansh2009", icon: <SiGithub size={20} /> },
   { name: "discord", label: "Discord", url: "https://discord.com/users/973202333381038080", icon: <SiDiscord size={20} /> },
   { name: "substack", label: "Substack", url: "https://substack.com/@ilikehedgehogs", icon: <SiSubstack size={20} /> },
-  { name: "instagram", label: "Instagram", url: "https://instagram.com/hedgehog_glazer", icon: <SiInstagram size={20} /> },
+  { name: "instagram", label: "Instagram", url: "https://www.instagram.com/hedghog_glazer/", icon: <SiInstagram size={20} /> },
+  { name: "threads", label: "Threads", url: "https://www.threads.net/@hedgehog_glazer", icon: <SiThreads size={20} /> },
   { name: "spotify", label: "Spotify", url: "https://open.spotify.com/user/314vp6s4axooafqfsu43k3tj55xm?si=97cdf9922a2e45b1", icon: <SiSpotify size={20} /> },
   { name: "anilist", label: "AniList", url: "https://anilist.co/user/Dsuryansh/", icon: <SiAnilist size={20} /> },
+  { name: "letterboxd", label: "Letterboxd", url: "https://letterboxd.com/dsuryansh/", icon: <SiLetterboxd size={20} /> },
   { name: "serialized", label: "Serialized", url: "https://serializd.com/user/Dsuryansh", icon: <SerializdIcon size={20} /> },
   { name: "chaosprep", label: "ChaosPrep", url: "https://chaosprep.in/?invite=DOqpF9IcBDNG54K0NquqVRYtr5m2", icon: <ChaosPrepIcon size={20} /> },
 ];
@@ -75,7 +77,7 @@ export default function ConnectionsMenu() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
-  const itemSpacing = 65;
+  const itemSpacing = 62;
 
   return (
     <>
@@ -121,9 +123,10 @@ export default function ConnectionsMenu() {
 
                 {/* The Social Icons */}
                 {socials.map((social, i) => {
-                  const pos = i < 4 ? i - 4 : i - 3;
+                  const half = Math.ceil(socials.length / 2);
+                  const pos = i < half ? i - half : i - half + 1;
                   const offset = pos * itemSpacing;
-                  const delay = Math.abs(pos) * 0.05;
+                  const delay = Math.abs(pos) * 0.04;
 
                   return (
                     <motion.a
@@ -181,7 +184,7 @@ export default function ConnectionsMenu() {
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.92, opacity: 0, y: 12 }}
                 transition={{ type: "spring", stiffness: 350, damping: 26 }}
-                className="relative pointer-events-auto w-full max-w-[340px] bg-[#121614]/95 border border-white/15 rounded-3xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex flex-col gap-5 text-white z-10"
+                className="relative pointer-events-auto w-full max-w-[360px] bg-[#121614]/95 border border-white/15 rounded-3xl p-5 sm:p-6 shadow-[0_12px_40px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex flex-col gap-4 text-white z-10"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between px-0.5">
@@ -200,28 +203,28 @@ export default function ConnectionsMenu() {
                   </button>
                 </div>
 
-                {/* 4x2 Grid of Socials */}
-                <div className="grid grid-cols-4 gap-y-4 gap-x-2 w-full place-items-center">
+                {/* 5x2 Grid of Socials */}
+                <div className="grid grid-cols-5 gap-y-4 gap-x-1 w-full place-items-center">
                   {socials.map((social, i) => (
                     <motion.a
                       key={social.name}
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center gap-1.5 group p-1 w-full max-w-[68px]"
+                      className="flex flex-col items-center justify-center gap-1.5 group p-0.5 w-full max-w-[58px]"
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{
                         type: "spring",
                         stiffness: 350,
                         damping: 24,
-                        delay: i * 0.03,
+                        delay: i * 0.025,
                       }}
                     >
-                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white text-black group-hover:bg-[#0022FF] group-hover:text-white group-active:scale-95 group-active:bg-[#0022FF] group-active:text-white transition-all duration-200 shadow-md">
+                      <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white text-black group-hover:bg-[#0022FF] group-hover:text-white group-active:scale-95 group-active:bg-[#0022FF] group-active:text-white transition-all duration-200 shadow-md">
                         {social.icon}
                       </div>
-                      <span className="text-[11px] font-medium text-white/70 group-hover:text-white transition-colors tracking-tight text-center truncate w-full">
+                      <span className="text-[10px] sm:text-[11px] font-medium text-white/70 group-hover:text-white transition-colors tracking-tight text-center truncate w-full">
                         {social.label}
                       </span>
                     </motion.a>

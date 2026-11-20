@@ -4,6 +4,7 @@
 
 import * as React from "react";
 import { useEffect, useRef } from "react";
+import { markLoaded } from "@/lib/loading-tracker";
 
 const MAX_DPR = 1;
 const NAME = "MosaicLens";
@@ -386,11 +387,15 @@ function OriginkitBaseMosaicLens(props: MosaicLensProps) {
     });
     if (!gl) {
       console.error(`${NAME}: WebGL2 unavailable`);
+      markLoaded("mosaic_lens");
       return;
     }
     const field = link(gl, FIELD_SRC, "field");
     const finish = link(gl, FINISH_SRC, "finish");
-    if (!field || !finish) return;
+    if (!field || !finish) {
+      markLoaded("mosaic_lens");
+      return;
+    }
     const uf = locations(gl, field, ["uRes", "uTime", "uC1", "uC2", "uSize", "uAngle"]);
     const un = locations(gl, finish, [
       "uField",
@@ -415,9 +420,11 @@ function OriginkitBaseMosaicLens(props: MosaicLensProps) {
     let raf = 0;
     let last = -1;
     let clock = 0;
+    let hasMarkedLoaded = false;
 
     const render = (now: number) => {
       raf = requestAnimationFrame(render);
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
       const dt = last < 0 ? 0 : clampN((now - last) / 1000, 0, 0.05);
       last = now;
       const v = vRef.current;
@@ -479,6 +486,10 @@ function OriginkitBaseMosaicLens(props: MosaicLensProps) {
       gl.uniform1f(un.uReach, v.reach * sy);
       gl.uniform1f(un.uTile, Math.max(1, Math.round(v.tile * dpr)));
       gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (!hasMarkedLoaded) {
+        hasMarkedLoaded = true;
+        markLoaded("mosaic_lens");
+      }
     };
 
     raf = requestAnimationFrame(render);

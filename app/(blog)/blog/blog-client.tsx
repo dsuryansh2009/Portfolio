@@ -9,20 +9,14 @@ import { BlogInteractions } from "@/components/blog/blog-interactions";
 import { CreatePost } from "@/components/blog/create-post";
 import { getPosts, createPostAction, deletePostAction, checkIsAdminAction } from "@/app/actions/blog";
 import { MicroPost } from "@/data/blog";
-import { LeaveScribble } from "@/components/blog/leave-scribble";
-import { CommunityScribbles } from "@/components/blog/community-scribbles";
-import { getApprovedScribblesAction } from "@/app/actions/scribble";
 
 export default function BlogClient({ initialIsAdmin = false }: { initialIsAdmin?: boolean }) {
   const [displayedPosts, setDisplayedPosts] = useState<MicroPost[]>([]);
-  const [activeTab, setActiveTab] = useState<"visitor" | "dsuryansh">("dsuryansh");
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(initialIsAdmin);
   
   // Easter egg admin state
   const [dsuryanshClicks, setdsuryanshClicks] = useState(0);
-
-  const [scribbles, setScribbles] = useState<any[]>([]);
 
   useEffect(() => {
     checkIsAdminAction().then((status) => {
@@ -30,16 +24,11 @@ export default function BlogClient({ initialIsAdmin = false }: { initialIsAdmin?
     });
   }, []);
 
-  const fetchPosts = async (tab: "visitor" | "dsuryansh") => {
+  const fetchPosts = async () => {
     setIsLoading(true);
     try {
-      const posts = await getPosts(tab);
+      const posts = await getPosts("dsuryansh");
       setDisplayedPosts(posts as MicroPost[]);
-      
-      if (tab === "visitor") {
-        const approvedScribbles = await getApprovedScribblesAction();
-        setScribbles(approvedScribbles);
-      }
     } catch (e) {
       console.error("Failed to fetch posts", e);
     } finally {
@@ -48,24 +37,24 @@ export default function BlogClient({ initialIsAdmin = false }: { initialIsAdmin?
   };
 
   useEffect(() => {
-    fetchPosts(activeTab);
-  }, [activeTab]);
+    fetchPosts();
+  }, []);
 
   const handlePostCreated = async (newPost: MicroPost) => {
     await createPostAction({
       content: newPost.content,
-      authorName: newPost.authorName || (activeTab === "dsuryansh" ? "dsuryansh" : "Anonymous"),
+      authorName: newPost.authorName || "dsuryansh",
       media: newPost.media,
       link: newPost.link,
     });
-    await fetchPosts(activeTab);
+    await fetchPosts();
   };
 
   const handleDeletePost = async (id: string) => {
     if (!confirm("Are you sure you want to delete this post?")) return;
     try {
       await deletePostAction(id);
-      await fetchPosts(activeTab);
+      await fetchPosts();
     } catch (err) {
       console.error("Failed to delete post", err);
       alert("Failed to delete post");
@@ -73,7 +62,6 @@ export default function BlogClient({ initialIsAdmin = false }: { initialIsAdmin?
   };
 
   const handledsuryanshClick = () => {
-    setActiveTab("dsuryansh");
     setdsuryanshClicks((prev) => prev + 1);
     if (dsuryanshClicks >= 4) {
       window.location.href = "/admin";
@@ -112,49 +100,27 @@ export default function BlogClient({ initialIsAdmin = false }: { initialIsAdmin?
           </div>
         )}
 
-        {/* Toggle Slider */}
-        <div className="flex bg-white/5 p-1 rounded-full relative w-64 mx-auto mb-12">
-          <motion.div 
-            className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-[#84b897] rounded-full z-0"
-            animate={{ left: activeTab === "dsuryansh" ? "4px" : "calc(50%)" }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          />
+        {/* Blog Header */}
+        <div className="flex flex-col items-center justify-center text-center mb-12">
           <button 
             onClick={handledsuryanshClick}
-            className={`w-1/2 py-2 text-sm font-medium z-10 transition-colors ${activeTab === "dsuryansh" ? "text-black" : "text-white/50 hover:text-white"}`}
+            className="text-3xl sm:text-4xl font-bold tracking-tight text-white hover:text-[#84b897] transition-colors focus:outline-none select-none cursor-pointer"
           >
             dsuryansh
           </button>
-          <button 
-            onClick={() => setActiveTab("visitor")}
-            className={`w-1/2 py-2 text-sm font-medium z-10 transition-colors ${activeTab === "visitor" ? "text-black" : "text-white/50 hover:text-white"}`}
-          >
-            Visitor
-          </button>
+          <p className="text-white/40 text-sm mt-2 font-medium">
+            Thoughts, updates & experiments
+          </p>
         </div>
 
-        {/* Create Post Section for dsuryansh tab (Admin only) */}
-        {activeTab === "dsuryansh" && isAdmin && (
+        {/* Create Post Section (Admin only) */}
+        {isAdmin && (
           <CreatePost 
             isAdmin={true}
             defaultAuthor="dsuryansh"
             tab="dsuryansh"
             onPostCreated={handlePostCreated} 
           />
-        )}
-
-        {/* Create Post Section for Visitor tab */}
-        {activeTab === "visitor" && (
-          <>
-            <CreatePost 
-              isAdmin={isAdmin}
-              defaultAuthor={isAdmin ? "dsuryansh" : ""}
-              tab="visitor"
-              onPostCreated={handlePostCreated} 
-            />
-            <LeaveScribble />
-            <CommunityScribbles initialScribbles={scribbles} />
-          </>
         )}
 
         {/* Feed */}

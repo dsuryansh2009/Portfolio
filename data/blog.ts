@@ -18,7 +18,7 @@ export interface MicroPost {
 export const blogPosts: MicroPost[] = [
   {
     id: "post-1",
-    content: "Just shipped a massive update to the blog! We now have a brand new visitor and commenting system built in. You can drop a comment anonymously, leave your name, and even like or dislike posts. Give it a try below! 🚀",
+    content: "Welcome to my blog! Here I share thoughts, progress on AI projects, tech experiments, and updates. Feel free to explore! 🚀",
     date: "Oct 7, 2026, 3:30 PM",
   }
 ];

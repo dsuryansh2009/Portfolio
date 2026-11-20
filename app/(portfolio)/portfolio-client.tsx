@@ -23,6 +23,7 @@ import OverscrollContainer from "@/components/common/overscroll-container";
 import ClayRobot from "@/components/originkit/ui/clay-robot";
 import { motion, AnimatePresence } from "framer-motion";
 import { playRobotClickSound } from "@/lib/robot-sounds";
+import { markLoaded } from "@/lib/loading-tracker";
 
 const ROBOT_MESSAGES = [
   "Beep boop! 👋 Welcome to my portfolio!",
@@ -41,13 +42,13 @@ const ROBOT_MESSAGES = [
 
 let hasPlayedIntro = false;
 
-export default function PortfolioClient({ 
+export default function PortfolioClient({
   initialActiveFolder = null,
   initialFolders = [],
   initialAboutContent = "",
   initialScribbles = [],
   initialProjects = []
-}: { 
+}: {
   initialActiveFolder?: string | null;
   initialFolders?: any[];
   initialAboutContent?: string;
@@ -152,6 +153,7 @@ export default function PortfolioClient({
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener("resize", check);
+    markLoaded("widgets");
     return () => window.removeEventListener("resize", check);
   }, []);
 
@@ -163,7 +165,7 @@ export default function PortfolioClient({
       setIsFullyBlack(true);
       setIntroStep("finished");
     }
-    
+
     const handleHashChange = () => {
       const hash = window.location.hash;
       setShowExtras(hash === '#extras');
@@ -174,10 +176,10 @@ export default function PortfolioClient({
         setIntroStep("finished");
       }
     };
-    
+
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
-    
+
     const handleLinkClick = (e: MouseEvent) => {
       const target = (e.target as Element).closest('a');
       if (target?.hash) {
@@ -195,7 +197,7 @@ export default function PortfolioClient({
       }
     };
     document.addEventListener('click', handleLinkClick);
-    
+
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
       document.removeEventListener('click', handleLinkClick);
@@ -365,10 +367,9 @@ export default function PortfolioClient({
 
       {/* Intro & Chat Fullscreen Sequence Overlay */}
       {introStep !== "finished" && (
-        <div 
-          className={`fixed inset-0 z-40 overflow-hidden select-none transition-opacity duration-700 ${
-            isIntroFadingOut ? "opacity-0 pointer-events-none" : "opacity-100"
-          }`}
+        <div
+          className={`fixed inset-0 z-40 overflow-hidden select-none transition-opacity duration-700 ${isIntroFadingOut ? "opacity-0 pointer-events-none" : "opacity-100"
+            }`}
         >
           {/* MosaicLens Background */}
           <MosaicLens
@@ -394,7 +395,7 @@ export default function PortfolioClient({
             <div className="w-full h-1/2 flex flex-col items-center justify-center relative">
               <h2 className="sr-only">Introduction</h2>
               <SparkleButton />
-              <button 
+              <button
                 onClick={openChat}
                 className="absolute bottom-10 animate-bounce text-white/50 hover:text-white transition-colors cursor-pointer p-3 z-20 focus:outline-none"
                 aria-label="Open chat"
@@ -409,9 +410,9 @@ export default function PortfolioClient({
             <div className="w-full h-1/2 flex flex-col items-center justify-center p-4 sm:p-8 relative">
               <h2 className="sr-only">Chat</h2>
               <div className="w-full max-w-3xl h-[500px] sm:h-[600px] flex flex-col justify-end">
-                <IOSMessageList 
-                  startImmediately={introStep === "chat"} 
-                  onComplete={handleChatComplete} 
+                <IOSMessageList
+                  startImmediately={introStep === "chat"}
+                  onComplete={handleChatComplete}
                 />
               </div>
             </div>
@@ -422,343 +423,342 @@ export default function PortfolioClient({
       {/* Overscroll Container: allows scrolling further than boundary and smoothly glides back to rest without bounce */}
       <OverscrollContainer disabled={!isFullyBlack || showExtras || !!activeFolder}>
         {/* Main Home Section */}
-        <section 
+        <section
           id="home"
-          className="relative z-10 flex h-screen w-full items-center justify-center p-4 sm:p-8 bg-black"
+          className="relative z-10 flex h-screen w-full items-center justify-center p-4 sm:p-8 bg-black overflow-hidden"
         >
           <h2 className="sr-only">Home</h2>
-          
-          {(isFullyBlack || isIntroFadingOut) && (
-            <>
-              <div className="absolute bottom-40 left-1/2 -translate-x-1/2 z-[1000] flex flex-col md:flex-row items-center gap-4 scale-[0.8] origin-bottom transform-gpu [backface-visibility:hidden]">
-                {/* Clay Robot walking on top of widgets */}
-                <div className="absolute bottom-full mb-[-20px] left-0 right-0 h-[140px] pointer-events-auto z-20">
-                  {/* Floating speech bubble popup */}
-                  <AnimatePresence>
-                    {robotMessage && (
-                      <motion.div
-                        key={robotMessage.id}
-                        initial={{ opacity: 0, y: 8, scale: 0.8 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -6, scale: 0.85 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                        style={{ left: `${robotMessage.xPercent}%` }}
-                        className="absolute bottom-[85%] -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap"
-                      >
-                        <div className="relative px-3.5 py-2 rounded-2xl bg-[#141816]/95 border border-[#2b3a30] text-[#f2f5f4] text-xs sm:text-sm font-medium shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_20px_rgba(132,184,151,0.15)] backdrop-blur-md flex items-center gap-2 select-none">
-                          <span>{robotMessage.text}</span>
-                          {/* Little speech tail pointing down to robot head */}
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-[#2b3a30]" />
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#141816]" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
 
-                  <ClayRobot 
-                    transparent
-                    walk={true}
-                    wave={true}
-                    scale={85}
-                    onRobotClick={handleRobotClick}
-                    response={{
-                      track: "page",
-                      headTurn: 7,
-                      eyeTravel: 6,
-                      followSpeed: 6,
-                      hop: 6,
-                    }}
-                    background={{
-                      shadow: "#000000",
-                      shadowDepth: 50,
-                    }}
-                  />
-                </div>
-
-                <MusicWidget />
-                <DiscordWidget />
-              </div>
-            <div className="absolute inset-x-0 bottom-12 flex justify-center z-[1010] pointer-events-none">
-              <div className="pointer-events-auto">
-                <ConnectionsMenu />
-              </div>
-            </div>
-            <div id="home-music-controls" className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1010] flex items-center justify-center pointer-events-auto" />
-            <PredictiveArcHorizon
-              style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                zIndex: -1,
-              }}
-            />
-          </>
-        )}
-      </section>
-
-      {/* About Section */}
-      {isFullyBlack && (
-        <section id="about" className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center bg-[#050505] px-5 sm:px-8 md:px-24 py-24">
-          <h2 className="sr-only">About Me</h2>
-          <div className="w-full max-w-5xl mx-auto">
-            <BlockTextReveal 
-              text={aboutContent}
-              font={{
-                fontSize: "clamp(16px, 4.5vw, 28px)",
-                textAlign: "left",
-                fontFamily: "Inter",
-                fontWeight: 500,
-                lineHeight: "1.6em",
-                letterSpacing: "-0.02em"
-              }}
-              textColor="#a3a3a3"
-              blockColor="#1a1a1a"
-              highlight={[
-                {
-                  text: "dsuryansh",
-                  block: true,
-                  color: "#84b897",
-                  rounded: 8,
-                  textColor: "#000000"
-                },
-                {
-                  text: "artificial intelligence,",
-                  block: true,
-                  color: "#2a3630",
-                  rounded: 8,
-                  textColor: "#84b897"
-                },
-                {
-                  text: "record of progress.",
-                  block: true,
-                  color: "#ffffff",
-                  rounded: 8,
-                  textColor: "#000000"
-                }
-              ]}
-            />
-          </div>
-        </section>
-      )}
-
-      {/* Projects Section */}
-      {isFullyBlack && (
-        <section id="projects" className="relative z-10 w-full bg-[#000000]">
-          <ProjectsShowcase projects={initialProjects} />
-        </section>
-      )}
-
-      {/* Gallery / Viewer Section */}
-      {isFullyBlack && (
-        <section id="gallery" className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center bg-[#000000] px-4 sm:px-8 md:px-24 overflow-hidden">
-          <h2 className="sr-only">Gallery & Projects</h2>
-          {activeFolder ? (
-            <>
-              <h3 className="sr-only">Viewing {activeFolder}</h3>
-              <button 
-                onClick={() => {
-                  setActiveFolder(null);
-                  if (initialActiveFolder) window.history.pushState({}, '', '/');
-                }}
-                className="absolute top-20 md:top-8 left-4 md:left-12 z-50 flex items-center gap-2 px-4 py-2 text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md"
-              >
-                <ArrowLeft size={20} />
-                <span className="font-medium text-sm tracking-wide">Back to Folders</span>
-              </button>
-              <div className="w-full flex-1 flex flex-col items-center justify-center relative">
-                {folders.find(f => f.name === activeFolder || f.slug === activeFolder)?.images?.length ? (
-                  <FlipGallery 
-                    images={folders.find(f => f.name === activeFolder || f.slug === activeFolder)!.images.map((img: any) => ({
-                      image: { src: img.imageUrl, alt: img.title || "Gallery Image" },
-                      text: [img.title, img.description].filter(Boolean).join('\n\n') || "No description provided",
-                      focusY: 50
-                    }))} 
-                    fit="contain" 
-                    onClose={() => {
-                      setActiveFolder(null);
-                      if (initialActiveFolder) window.history.pushState({}, '', '/');
-                    }}
-                  />
-                ) : (
-                  <div className="text-white/50">No images in this folder</div>
+          <div className="absolute bottom-40 left-1/2 -translate-x-1/2 z-[1000] flex flex-col md:flex-row items-center gap-4 scale-[0.8] origin-bottom transform-gpu [backface-visibility:hidden] min-w-[320px] md:min-w-[656px] min-h-[88px]">
+            {/* Clay Robot walking on top of widgets */}
+            <div className="absolute bottom-full mb-[-20px] left-0 right-0 h-[140px] pointer-events-auto z-20">
+              {/* Floating speech bubble popup */}
+              <AnimatePresence>
+                {robotMessage && (
+                  <motion.div
+                    key={robotMessage.id}
+                    initial={{ opacity: 0, y: 8, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.85 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    style={{ left: `${robotMessage.xPercent}%` }}
+                    className="absolute bottom-[85%] -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap"
+                  >
+                    <div className="relative px-3.5 py-2 rounded-2xl bg-[#141816]/95 border border-[#2b3a30] text-[#f2f5f4] text-xs sm:text-sm font-medium shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_20px_rgba(132,184,151,0.15)] backdrop-blur-md flex items-center gap-2 select-none">
+                      <span>{robotMessage.text}</span>
+                      {/* Little speech tail pointing down to robot head */}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-[#2b3a30]" />
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#141816]" />
+                    </div>
+                  </motion.div>
                 )}
-              </div>
-            </>
-          ) : (
-            isGalleryLoading ? (
-              <div className="text-white/50">Loading Gallery...</div>
-            ) : folders.length > 0 ? (
-              isMobile ? (
-                // Mobile: tap-friendly card grid
-                <div className="w-full py-16">
-                  <h3 className="text-white/30 text-xs tracking-[0.3em] uppercase font-medium text-center mb-8">Gallery</h3>
-                  <div className="grid grid-cols-2 gap-4 w-full">
-                    {folders.map((f) => (
-                      <button
-                        key={f.name}
-                        onClick={() => {
-                          setActiveFolder(f.name);
-                          if (
-                            f.name?.toLowerCase().includes("mean me") &&
-                            !mcAchievementShownRef.current
-                          ) {
-                            mcAchievementShownRef.current = true;
-                            setTimeout(() => setShowMcAchievement(true), 600);
-                          }
-                        }}
-                        className="relative group overflow-hidden rounded-2xl aspect-square bg-white/5 border border-white/10 active:scale-95 transition-transform duration-200"
-                      >
-                        {(f.coverImage || f.images?.[0]?.imageUrl) && (
-                          <img
-                            src={f.coverImage || f.images?.[0]?.imageUrl}
-                            alt={f.name}
-                            loading="lazy"
-                            decoding="async"
-                            className="absolute inset-0 w-full h-full object-cover opacity-70 group-active:opacity-90 transition-opacity"
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-medium text-sm tracking-wide text-left truncate">
-                          {f.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <HoverImageReveal 
-                  items={folders.map(f => ({
-                    text: f.name,
-                    image: { src: f.coverImage || f.images?.[0]?.imageUrl || "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/8e0d22a8-ac82-4893-90d8-3403f80ec600/w=800", alt: f.name },
-                  }))} 
-                  onItemClick={(folder: string) => {
-                    setActiveFolder(folder);
-                    if (
-                      folder?.toLowerCase().includes("mean me") &&
-                      !mcAchievementShownRef.current
-                    ) {
-                      mcAchievementShownRef.current = true;
-                      setTimeout(() => setShowMcAchievement(true), 600);
-                    }
-                  }}
-                  offsetX={400}
-                />
-              )
-            ) : (
-              <div className="text-white/50">No folders available.</div>
-            )
-          )}
+              </AnimatePresence>
+
+              <ClayRobot
+                transparent
+                walk={true}
+                wave={true}
+                scale={85}
+                onRobotClick={handleRobotClick}
+                response={{
+                  track: "page",
+                  headTurn: 7,
+                  eyeTravel: 6,
+                  followSpeed: 6,
+                  hop: 6,
+                }}
+                background={{
+                  shadow: "#000000",
+                  shadowDepth: 50,
+                }}
+              />
+            </div>
+
+            <MusicWidget />
+            <DiscordWidget />
+          </div>
+
+          <div className="absolute inset-x-0 bottom-12 flex justify-center z-[1010] pointer-events-none">
+            <div className="pointer-events-auto">
+              <ConnectionsMenu />
+            </div>
+          </div>
+
+          <div id="home-music-controls" className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1010] flex items-center justify-center pointer-events-auto" />
+
+          <PredictiveArcHorizon
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: -1,
+            }}
+          />
         </section>
-      )}
 
-      {/* Footer */}
-      {isFullyBlack && !activeFolder && (
-        <footer 
-          ref={footerRef}
-          onMouseMove={() => {
-            if (footerTimerRef.current) {
-              clearTimeout(footerTimerRef.current);
-              footerTimerRef.current = setTimeout(() => {
-                if (lenis) {
-                  lenis.scrollTo("#gallery", { duration: 1.4 });
-                } else {
-                  document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" });
-                }
-              }, 5000);
-            }
-          }}
-          className="relative z-10 w-full bg-[#000000] px-5 sm:px-8 md:px-24 py-10 pb-20 sm:pb-12 text-white"
-        >
-          <div className="max-w-6xl mx-auto flex flex-col gap-6 text-xs sm:text-sm">
-            {/* Main Row: Links on left, Copyright & Back to Top on right */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              {/* Left: Email, Socials & Extras link */}
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 sm:gap-x-5 gap-y-2">
-                <a 
-                  href="mailto:dsuryansh@proton.me" 
-                  className="text-white/60 hover:text-white transition-colors duration-200"
-                >
-                  dsuryansh@proton.me
-                </a>
+        {/* About Section */}
+        {isFullyBlack && (
+          <section id="about" className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center bg-[#050505] px-5 sm:px-8 md:px-24 py-24">
+            <h2 className="sr-only">About Me</h2>
+            <div className="w-full max-w-5xl mx-auto">
+              <BlockTextReveal
+                text={aboutContent}
+                font={{
+                  fontSize: "clamp(16px, 4.5vw, 28px)",
+                  textAlign: "left",
+                  fontFamily: "Inter",
+                  fontWeight: 500,
+                  lineHeight: "1.6em",
+                  letterSpacing: "-0.02em"
+                }}
+                textColor="#a3a3a3"
+                blockColor="#1a1a1a"
+                highlight={[
+                  {
+                    text: "dsuryansh",
+                    block: true,
+                    color: "#84b897",
+                    rounded: 8,
+                    textColor: "#000000"
+                  },
+                  {
+                    text: "artificial intelligence,",
+                    block: true,
+                    color: "#2a3630",
+                    rounded: 8,
+                    textColor: "#84b897"
+                  },
+                  {
+                    text: "record of progress.",
+                    block: true,
+                    color: "#ffffff",
+                    rounded: 8,
+                    textColor: "#000000"
+                  }
+                ]}
+              />
+            </div>
+          </section>
+        )}
 
-                <span className="text-white/20 select-none">·</span>
+        {/* Projects Section */}
+        {isFullyBlack && (
+          <section id="projects" className="relative z-10 w-full bg-[#000000]">
+            <ProjectsShowcase projects={initialProjects} />
+          </section>
+        )}
 
-                <a 
-                  href="https://github.com/dsuryansh2009" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-white/60 hover:text-white transition-colors duration-200"
-                >
-                  GitHub
-                </a>
-
-                <span className="text-white/20 select-none">·</span>
-
-                <a 
-                  href="https://x.com/dsuryansh2009" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-white/60 hover:text-white transition-colors duration-200"
-                >
-                  X
-                </a>
-
-                <span className="text-white/20 select-none">·</span>
-
-                <a
-                  href="#extras"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.location.hash = "#extras";
-                    setShowExtras(true);
-                  }}
-                  className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer"
-                >
-                  Leave a scribble
-                </a>
-              </div>
-
-              {/* Right: Copyright & Back to Top */}
-              <div className="flex items-center justify-center gap-4 sm:gap-5 text-white/50">
-                <span>© {new Date().getFullYear()} dsuryansh</span>
-
-                <span className="text-white/20 select-none">·</span>
-
+        {/* Gallery / Viewer Section */}
+        {isFullyBlack && (
+          <section id="gallery" className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center bg-[#000000] px-4 sm:px-8 md:px-24 overflow-hidden">
+            <h2 className="sr-only">Gallery & Projects</h2>
+            {activeFolder ? (
+              <>
+                <h3 className="sr-only">Viewing {activeFolder}</h3>
                 <button
                   onClick={() => {
-                    if (lenis) {
-                      lenis.scrollTo(0, { duration: 1.2 });
-                    } else {
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
+                    setActiveFolder(null);
+                    if (initialActiveFolder) window.history.pushState({}, '', '/');
                   }}
-                  className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-1 group"
+                  className="absolute top-20 md:top-8 left-4 md:left-12 z-50 flex items-center gap-2 px-4 py-2 text-white bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md"
                 >
-                  <span>Back to top</span>
-                  <span className="transition-transform duration-200 group-hover:-translate-y-0.5">↑</span>
+                  <ArrowLeft size={20} />
+                  <span className="font-medium text-sm tracking-wide">Back to Folders</span>
                 </button>
+                <div className="w-full flex-1 flex flex-col items-center justify-center relative">
+                  {folders.find(f => f.name === activeFolder || f.slug === activeFolder)?.images?.length ? (
+                    <FlipGallery
+                      images={folders.find(f => f.name === activeFolder || f.slug === activeFolder)!.images.map((img: any) => ({
+                        image: { src: img.imageUrl, alt: img.title || "Gallery Image" },
+                        text: [img.title, img.description].filter(Boolean).join('\n\n') || "No description provided",
+                        focusY: 50
+                      }))}
+                      fit="contain"
+                      onClose={() => {
+                        setActiveFolder(null);
+                        if (initialActiveFolder) window.history.pushState({}, '', '/');
+                      }}
+                    />
+                  ) : (
+                    <div className="text-white/50">No images in this folder</div>
+                  )}
+                </div>
+              </>
+            ) : (
+              isGalleryLoading ? (
+                <div className="text-white/50">Loading Gallery...</div>
+              ) : folders.length > 0 ? (
+                isMobile ? (
+                  // Mobile: tap-friendly card grid
+                  <div className="w-full py-16">
+                    <h3 className="text-white/30 text-xs tracking-[0.3em] uppercase font-medium text-center mb-8">Gallery</h3>
+                    <div className="grid grid-cols-2 gap-4 w-full">
+                      {folders.map((f) => (
+                        <button
+                          key={f.name}
+                          onClick={() => {
+                            setActiveFolder(f.name);
+                            if (
+                              f.name?.toLowerCase().includes("mean me") &&
+                              !mcAchievementShownRef.current
+                            ) {
+                              mcAchievementShownRef.current = true;
+                              setTimeout(() => setShowMcAchievement(true), 600);
+                            }
+                          }}
+                          className="relative group overflow-hidden rounded-2xl aspect-square bg-white/5 border border-white/10 active:scale-95 transition-transform duration-200"
+                        >
+                          {(f.coverImage || f.images?.[0]?.imageUrl) && (
+                            <img
+                              src={f.coverImage || f.images?.[0]?.imageUrl}
+                              alt={f.name}
+                              loading="lazy"
+                              decoding="async"
+                              className="absolute inset-0 w-full h-full object-cover opacity-70 group-active:opacity-90 transition-opacity"
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-medium text-sm tracking-wide text-left truncate">
+                            {f.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <HoverImageReveal
+                    items={folders.map(f => ({
+                      text: f.name,
+                      image: { src: f.coverImage || f.images?.[0]?.imageUrl || "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/8e0d22a8-ac82-4893-90d8-3403f80ec600/w=800", alt: f.name },
+                    }))}
+                    onItemClick={(folder: string) => {
+                      setActiveFolder(folder);
+                      if (
+                        folder?.toLowerCase().includes("mean me") &&
+                        !mcAchievementShownRef.current
+                      ) {
+                        mcAchievementShownRef.current = true;
+                        setTimeout(() => setShowMcAchievement(true), 600);
+                      }
+                    }}
+                    offsetX={400}
+                  />
+                )
+              ) : (
+                <div className="text-white/50">No folders available.</div>
+              )
+            )}
+          </section>
+        )}
+
+        {/* Footer */}
+        {isFullyBlack && !activeFolder && (
+          <footer
+            ref={footerRef}
+            onMouseMove={() => {
+              if (footerTimerRef.current) {
+                clearTimeout(footerTimerRef.current);
+                footerTimerRef.current = setTimeout(() => {
+                  if (lenis) {
+                    lenis.scrollTo("#gallery", { duration: 1.4 });
+                  } else {
+                    document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" });
+                  }
+                }, 5000);
+              }
+            }}
+            className="relative z-10 w-full bg-[#000000] px-5 sm:px-8 md:px-24 py-10 pb-20 sm:pb-12 text-white"
+          >
+            <div className="max-w-6xl mx-auto flex flex-col gap-6 text-xs sm:text-sm">
+              {/* Main Row: Links on left, Copyright & Back to Top on right */}
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                {/* Left: Email, Socials & Extras link */}
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 sm:gap-x-5 gap-y-2">
+                  <a
+                    href="mailto:dsuryansh@proton.me"
+                    className="text-white/60 hover:text-white transition-colors duration-200"
+                  >
+                    dsuryansh@proton.me
+                  </a>
+
+                  <span className="text-white/20 select-none">·</span>
+
+                  <a
+                    href="https://github.com/dsuryansh2009"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/60 hover:text-white transition-colors duration-200"
+                  >
+                    GitHub
+                  </a>
+
+                  <span className="text-white/20 select-none">·</span>
+
+                  <a
+                    href="https://x.com/dsuryansh2009"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/60 hover:text-white transition-colors duration-200"
+                  >
+                    X
+                  </a>
+
+                  <span className="text-white/20 select-none">·</span>
+
+                  <a
+                    href="#extras"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.hash = "#extras";
+                      setShowExtras(true);
+                    }}
+                    className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer"
+                  >
+                    Leave a scribble
+                  </a>
+                </div>
+
+                {/* Right: Copyright & Back to Top */}
+                <div className="flex items-center justify-center gap-4 sm:gap-5 text-white/50">
+                  <span>© {new Date().getFullYear()} dsuryansh</span>
+
+                  <span className="text-white/20 select-none">·</span>
+
+                  <button
+                    onClick={() => {
+                      if (lenis) {
+                        lenis.scrollTo(0, { duration: 1.2 });
+                      } else {
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                    }}
+                    className="text-white/60 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-1 group"
+                  >
+                    <span>Back to top</span>
+                    <span className="transition-transform duration-200 group-hover:-translate-y-0.5">↑</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom Sub-row: Vibecoding & WIP notice */}
+              <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 text-[11px] sm:text-xs text-white/40">
+                <span className="text-white/50">Made with vibecoding</span>
+                <span className="text-white/35">Work in progress — website isn&apos;t fully finished yet</span>
               </div>
             </div>
-
-            {/* Bottom Sub-row: Vibecoding & WIP notice */}
-            <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 text-[11px] sm:text-xs text-white/40">
-              <span className="text-white/50">Made with vibecoding</span>
-              <span className="text-white/35">Work in progress — website isn&apos;t fully finished yet</span>
-            </div>
-          </div>
-        </footer>
-      )}
+          </footer>
+        )}
       </OverscrollContainer>
 
       {/* Extras Section Overlay */}
       {isFullyBlack && showExtras && (
-        <section 
-          id="extras" 
+        <section
+          id="extras"
           data-lenis-prevent
           className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-[#050505] px-5 sm:px-8 md:px-24 py-24"
         >
-          <button 
+          <button
             onClick={() => {
               window.history.pushState({}, '', '/');
               setShowExtras(false);
@@ -768,7 +768,7 @@ export default function PortfolioClient({
             <ArrowLeft size={20} />
             <span className="font-medium text-sm tracking-wide">Back</span>
           </button>
-          
+
           <div className="w-full max-w-6xl mx-auto pt-16">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-white/10 pb-6 mb-12">
               <div>
@@ -802,7 +802,7 @@ export default function PortfolioClient({
         </section>
       )}
 
-      <LeaveScribble 
+      <LeaveScribble
         variant="modal-only"
         isOpen={isScribbleOpen}
         onOpenChange={setIsScribbleOpen}

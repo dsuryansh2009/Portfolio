@@ -22,17 +22,16 @@ interface CreatePostProps {
   onPostCreated: (post: MicroPost) => void;
   isAdmin?: boolean;
   defaultAuthor?: string;
-  tab?: "visitor" | "dsuryansh";
+  tab?: string;
 }
 
 export function CreatePost({ 
   onPostCreated, 
   isAdmin = false, 
-  defaultAuthor = "", 
-  tab = "visitor" 
+  defaultAuthor = "dsuryansh", 
+  tab = "dsuryansh" 
 }: CreatePostProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [nameInput, setNameInput] = useState(defaultAuthor);
   const [contentInput, setContentInput] = useState("");
   const [media, setMedia] = useState<{ type: "image" | "video" | "audio" | "pdf"; url: string; name?: string }[]>([]);
   
@@ -94,7 +93,7 @@ export function CreatePost({
             const reader = new FileReader();
             reader.onload = (ev) => {
               const url = ev.target?.result as string;
-              setMedia(prev => [...prev, { type, url: nameInput || file.name }]);
+              setMedia(prev => [...prev, { type, url, name: file.name }]);
               resolve();
             };
             reader.readAsDataURL(file);
@@ -148,9 +147,7 @@ export function CreatePost({
   const handlePost = () => {
     if (!contentInput.trim() && media.length === 0 && !attachedLink) return;
 
-    const author = tab === "dsuryansh"
-      ? "dsuryansh"
-      : (nameInput.trim() || (isAdmin ? "dsuryansh" : "Anonymous"));
+    const author = "dsuryansh";
 
     const newPost: MicroPost = {
       id: crypto.randomUUID(),
@@ -169,7 +166,6 @@ export function CreatePost({
 
     onPostCreated(newPost);
     setContentInput("");
-    if (tab !== "dsuryansh") setNameInput("");
     setMedia([]);
     setAttachedLink(null);
     setShowGifInput(false);
@@ -184,7 +180,6 @@ export function CreatePost({
   const handleCancel = () => {
     setIsOpen(false);
     setContentInput("");
-    if (tab !== "dsuryansh") setNameInput("");
     setMedia([]);
     setAttachedLink(null);
     setShowGifInput(false);
@@ -198,27 +193,13 @@ export function CreatePost({
   return (
     <div className="mb-12 w-full flex flex-col items-end">
       {!isOpen ? (
-        tab === "dsuryansh" ? (
-          <button
-            onClick={() => setIsOpen(true)}
-            className="flex items-center gap-2 bg-[#84b897] hover:bg-[#95cca8] text-black px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-[#84b897]/20 hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            <Pen size={17} />
-            <span>Create dsuryansh Post</span>
-          </button>
-        ) : (
-          <button
-            onClick={() => setIsOpen(true)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:scale-105 active:scale-95 cursor-pointer ${
-              isAdmin 
-                ? "bg-[#84b897]/15 hover:bg-[#84b897]/25 text-[#84b897] border border-[#84b897]/40" 
-                : "bg-[#84b897]/10 hover:bg-[#84b897]/20 text-[#84b897] border border-[#84b897]/30"
-            }`}
-          >
-            <Plus size={18} />
-            <span>{isAdmin ? "Create Visitor Post (Admin)" : "Create Visitor Post"}</span>
-          </button>
-        )
+        <button
+          onClick={() => setIsOpen(true)}
+          className="flex items-center gap-2 bg-[#84b897] hover:bg-[#95cca8] text-black px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-[#84b897]/20 hover:scale-105 active:scale-95 cursor-pointer"
+        >
+          <Pen size={17} />
+          <span>Create Post</span>
+        </button>
       ) : (
         <motion.div
           initial={{ opacity: 0, y: -20, scale: 0.98 }}
@@ -230,7 +211,7 @@ export function CreatePost({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
               <h3 className="text-xl font-semibold text-white">
-                {tab === "dsuryansh" ? "New dsuryansh Post" : "Create Post"}
+                New Post
               </h3>
               {isAdmin && (
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#84b897]/20 text-[#84b897] border border-[#84b897]/30 flex items-center gap-1">
@@ -248,28 +229,16 @@ export function CreatePost({
           </div>
 
           <div className="flex flex-col gap-4">
-            {tab === "dsuryansh" ? (
-              <div className="flex items-center gap-2 text-xs text-white/60 bg-white/5 border border-white/5 px-3 py-2 rounded-xl">
-                <span className="text-[#84b897] font-semibold">Publishing as:</span>
-                <span className="text-white font-medium">dsuryansh</span>
-                <span className="text-white/35">· Appears directly on the dsuryansh tab</span>
-              </div>
-            ) : (
-              <input
-                type="text"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value.slice(0, 30))}
-                placeholder={isAdmin ? "Name (Optional, defaults to dsuryansh)" : "Name (Optional)"}
-                maxLength={30}
-                className="w-full bg-transparent border-b border-white/10 pb-2 px-1 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#84b897]/50 transition-colors"
-              />
-            )}
+            <div className="flex items-center gap-2 text-xs text-white/60 bg-white/5 border border-white/5 px-3 py-2 rounded-xl">
+              <span className="text-[#84b897] font-semibold">Publishing as:</span>
+              <span className="text-white font-medium">dsuryansh</span>
+            </div>
 
             <textarea
               ref={textareaRef}
               value={contentInput}
               onChange={handleInputResize}
-              placeholder={tab === "dsuryansh" ? "What's new, dsuryansh? Share updates, thoughts, links..." : "What's on your mind?"}
+              placeholder="What's new, dsuryansh? Share updates, thoughts, links..."
               className="w-full bg-transparent resize-none text-white placeholder:text-white/30 focus:outline-none min-h-[110px] py-2 px-1 text-lg transition-all"
             />
 

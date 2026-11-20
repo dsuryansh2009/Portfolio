@@ -27,8 +27,17 @@ function getTimeAgo(uts?: string) {
   return `${days}d ago`;
 }
 
+const DEFAULT_TRACK: TrackData = {
+  name: "God's Plan",
+  artist: "Drake",
+  album: "Scorpion",
+  image: "https://lastfm-img.freetls.fastly.net/i/u/300x300/ca4c69928d1fbdfff2f29c57541125cc.jpg",
+  nowPlaying: true,
+  username: "d_suryansh",
+};
+
 export default function MusicWidget() {
-  const [track, setTrack] = useState<TrackData | null>(null);
+  const [track, setTrack] = useState<TrackData>(DEFAULT_TRACK);
 
   useEffect(() => {
     let isMounted = true;
@@ -38,17 +47,23 @@ export default function MusicWidget() {
         const res = await fetch(`/api/lastfm?t=${Date.now()}`, { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
-        const recent = data?.recenttracks?.track?.[0];
+        const raw = data?.recenttracks?.track;
+        const recent = Array.isArray(raw) ? raw[0] : raw;
         
         if (recent && isMounted) {
+          const artistText = typeof recent.artist === "object" ? recent.artist["#text"] : String(recent.artist || "");
+          const albumText = typeof recent.album === "object" ? recent.album?.["#text"] : String(recent.album || "");
+          const images = Array.isArray(recent.image) ? recent.image : [];
+          const imgUrl = images[3]?.["#text"] || images[2]?.["#text"] || images[0]?.["#text"] || DEFAULT_TRACK.image;
+
           setTrack({
-            name: recent.name,
-            artist: recent.artist["#text"],
-            album: recent.album?.["#text"] || "",
-            image: recent.image[3]?.["#text"] || recent.image[2]?.["#text"] || "", 
+            name: recent.name || DEFAULT_TRACK.name,
+            artist: artistText || DEFAULT_TRACK.artist,
+            album: albumText || DEFAULT_TRACK.album,
+            image: imgUrl, 
             nowPlaying: recent["@attr"]?.nowplaying === "true",
             timestamp: recent.date?.uts,
-            username: data.username || "lastfm"
+            username: data.username || "d_suryansh"
           });
         }
       } catch (e) {
@@ -72,8 +87,6 @@ export default function MusicWidget() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
-
-  if (!track) return null;
 
   return (
     <motion.a 

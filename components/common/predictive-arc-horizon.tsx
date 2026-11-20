@@ -2,8 +2,9 @@
 
 import * as React from "react"
 import { useEffect, useRef } from "react"
+import { markLoaded } from "@/lib/loading-tracker"
 
-const MAX_DPR = 2
+const MAX_DPR = 1.25
 
 const VERT_SRC = `
 attribute vec2 a_pos;
@@ -212,19 +213,27 @@ function __OriginkitBase_PredictiveArcHorizon(props: Props) {
         const gl = canvas.getContext("webgl", { alpha: false, antialias: false, depth: false })
         if (!gl) {
             console.error("PredictiveArcHorizon: WebGL unavailable")
+            markLoaded("horizon")
             return
         }
 
         const vs = compile(gl, gl.VERTEX_SHADER, VERT_SRC)
         const fs = compile(gl, gl.FRAGMENT_SHADER, FRAG_SRC)
-        if (!vs || !fs) return
+        if (!vs || !fs) {
+            markLoaded("horizon")
+            return
+        }
         const prog = gl.createProgram()
-        if (!prog) return
+        if (!prog) {
+            markLoaded("horizon")
+            return
+        }
         gl.attachShader(prog, vs)
         gl.attachShader(prog, fs)
         gl.linkProgram(prog)
         if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
             console.error("PredictiveArcHorizon link:", gl.getProgramInfoLog(prog))
+            markLoaded("horizon")
             return
         }
         gl.useProgram(prog)
@@ -245,6 +254,7 @@ function __OriginkitBase_PredictiveArcHorizon(props: Props) {
         let raf = 0
         let last = performance.now()
         let clock = 0
+        let hasMarkedLoaded = false
         const PTR_RATE = 6.0
         
         // Audio processing state
@@ -271,7 +281,7 @@ function __OriginkitBase_PredictiveArcHorizon(props: Props) {
         observer.observe(canvas);
 
         const render = (now: number) => {
-            if (!isVisible) {
+            if (!isVisible || (typeof document !== "undefined" && document.visibilityState === "hidden")) {
                 return;
             }
 
@@ -382,6 +392,10 @@ function __OriginkitBase_PredictiveArcHorizon(props: Props) {
             gl.uniform3f(u("uHigh"), chh[0], chh[1], chh[2])
 
             gl.drawArrays(gl.TRIANGLES, 0, 3)
+            if (!hasMarkedLoaded) {
+                hasMarkedLoaded = true
+                markLoaded("horizon")
+            }
             raf = requestAnimationFrame(render)
         }
 

@@ -33,8 +33,26 @@ interface LanyardData {
   }[];
 }
 
+const DEFAULT_LANYARD: LanyardData = {
+  discord_user: {
+    id: DISCORD_ID,
+    username: "d.suryansh",
+    avatar: "f7417a412edd044260aaba0d077a1c2b",
+    discriminator: "0",
+  },
+  discord_status: "online",
+  activities: [
+    {
+      id: "github:1",
+      name: "GitHub",
+      type: 0,
+      state: "Browsing topics",
+    },
+  ],
+};
+
 export default function DiscordWidget() {
-  const [lanyard, setLanyard] = useState<LanyardData | null>(null);
+  const [lanyard, setLanyard] = useState<LanyardData>(DEFAULT_LANYARD);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -94,8 +112,9 @@ export default function DiscordWidget() {
           } else if (message.op === 0) {
             // Event opcode
             if (message.t === "INIT_STATE" || message.t === "PRESENCE_UPDATE") {
-              if (message.d && isMounted) {
-                setLanyard(message.d);
+              const userData = (message.d && message.d[DISCORD_ID]) ? message.d[DISCORD_ID] : message.d;
+              if (userData && isMounted) {
+                setLanyard(userData);
               }
             }
           }
@@ -136,12 +155,9 @@ export default function DiscordWidget() {
     };
   }, []);
 
-  if (!mounted || !lanyard) return null;
-
-  // Filter out Spotify if they are using the Music Widget for that, 
-  // or we can show whatever activity is active.
-  // Activities[0] is usually the primary one (like VS Code, a game, etc.)
-  const activity = lanyard.activities.find(a => a.type !== 2) || lanyard.activities[0];
+  const activities = Array.isArray(lanyard?.activities) ? lanyard.activities : DEFAULT_LANYARD.activities;
+  const activity = activities.find(a => a.type !== 2) || activities[0];
+  const discordUser = lanyard?.discord_user || DEFAULT_LANYARD.discord_user;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -188,10 +204,10 @@ export default function DiscordWidget() {
                 alt={activity.name} 
                 className="w-full h-full object-cover" 
               />
-            ) : lanyard.discord_user.avatar ? (
+            ) : discordUser.avatar ? (
               <img 
-                src={`https://cdn.discordapp.com/avatars/${lanyard.discord_user.id}/${lanyard.discord_user.avatar}.png?size=128`}
-                alt={lanyard.discord_user.username}
+                src={`https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png?size=128`}
+                alt={discordUser.username}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -216,7 +232,7 @@ export default function DiscordWidget() {
             )}
           </div>
           <div className="text-[17px] font-bold text-[#f2f5f4] leading-tight truncate">
-            {activity ? activity.name : lanyard.discord_user.username}
+            {activity ? activity.name : discordUser.username}
           </div>
           <div className="text-[13px] font-medium text-[#84968e] truncate mt-0.5">
             {activity 

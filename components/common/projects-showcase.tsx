@@ -1,9 +1,43 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
-import CreaseFlyer from "./crease-flyer";
+import { useEffect, useRef, useState } from "react";
+
+const CreaseFlyer = dynamic(() => import("./crease-flyer"), { ssr: false });
+
+function LazyCreaseFlyer(props: any) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || near) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setNear(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setNear(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "600px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near]);
+
+  return (
+    <div ref={ref} className="w-full h-full">
+      {near ? <CreaseFlyer {...props} /> : null}
+    </div>
+  );
+}
 
 const ProjectCard = ({ project, index }: { project: any; index: number }) => {
   return (
@@ -15,7 +49,7 @@ const ProjectCard = ({ project, index }: { project: any; index: number }) => {
         className="w-full md:w-1/2 overflow-hidden rounded-2xl relative aspect-[4/3] isolate"
         style={{ transform: 'translateZ(0)', clipPath: 'inset(0 round 1rem)' }}
       >
-        <CreaseFlyer
+        <LazyCreaseFlyer
           images={[{ image: project.imageUrl }]}
           playback={{ play: "click", hold: 2.5, speed: 5, spin: 5 }}
           posterWidth={1024}

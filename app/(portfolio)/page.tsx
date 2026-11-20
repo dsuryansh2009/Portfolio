@@ -20,7 +20,10 @@ export default async function PortfolioPage() {
       "url": process.env.NEXT_PUBLIC_APP_URL || "https://localhost:3000",
       "jobTitle": "Student & AI Developer",
       "sameAs": [
-        "https://github.com/dsuryansh",
+        "https://github.com/dsuryansh2009",
+        "https://www.instagram.com/hedghog_glazer/",
+        "https://www.threads.net/@hedgehog_glazer",
+        "https://letterboxd.com/dsuryansh/"
       ]
     }
   };

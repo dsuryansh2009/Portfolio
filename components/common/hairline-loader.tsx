@@ -3,6 +3,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, type CSSProperties, type RefObject } from "react";
+import { getRealLoadingProgress } from "@/lib/loading-tracker";
 
 const RenderTarget = {
   current: () => "preview",
@@ -92,7 +93,6 @@ function edRealLoad(): number {
 
 const edClamp = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
 const edSeg = (x: number, a: number, b: number): number => edClamp((x - a) / Math.max(1e-6, b - a));
-const edOutCubic = (x: number): number => 1 - Math.pow(1 - x, 3);
 const edInOutQuart = (x: number): number =>
   x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2;
 
@@ -112,8 +112,8 @@ function edRootStyle(style: CSSProperties | undefined): CSSProperties {
     position: "relative",
     width: "100%",
     height: "100%",
-    minWidth: 1200,
-    minHeight: 800,
+    minWidth: 0,
+    minHeight: 0,
     overflow: "hidden",
     containerType: "size",
     isolation: "isolate",
@@ -182,9 +182,21 @@ function useEditorialLoader(
       t += dt;
       const revealS = reduced ? 0.4 : sceneRef.current.revealS;
       if (revealAt < 0) {
-        const target = onCanvas ? curve(t) : Math.min(curve(t), edRealLoad());
-        progress = target >= 1 ? 1 : Math.min(target, progress + dt * 1.5);
-        if (progress >= 1 && t >= loadS) revealAt = t;
+        if (onCanvas) {
+          const target = curve(t);
+          progress = target >= 1 ? 1 : Math.min(target, progress + dt * 1.5);
+          if (progress >= 1 && t >= loadS) revealAt = t;
+        } else {
+          const real = getRealLoadingProgress();
+          // Safeguard: after 5.5s, proceed so user is never locked out if WebGL is disabled
+          const isReady = real >= 1.0 || t >= 5.5;
+          const target = isReady
+            ? Math.max(curve(t), Math.min(1, t / loadS))
+            : Math.min(0.92, Math.max(real * 0.9, curve(t) * 0.7));
+          const step = dt * (isReady ? 2.0 : 1.2);
+          progress = isReady && t >= loadS ? 1 : Math.min(target, progress + step);
+          if (isReady && progress >= 1 && t >= loadS) revealAt = t;
+        }
       }
       draw(dt);
       if (revealAt >= 0 && t - revealAt >= revealS) {
@@ -246,9 +258,7 @@ function OriginkitBaseHairline(props: HairlineProps) {
     frame({ t, progress, reveal }) {
       const scale = scaleRef.current;
       if (scale)
-        scale.style.opacity = String(
-          edOutCubic(edSeg(t, 0.05, 0.7)) * (1 - edSeg(reveal, 0, 0.18))
-        );
+        scale.style.opacity = String(1 - edSeg(reveal, 0, 0.18));
       const rule = ruleRef.current;
       if (rule) rule.style.transform = `scaleX(${progress})`;
       const count = countRef.current;
@@ -282,7 +292,7 @@ function OriginkitBaseHairline(props: HairlineProps) {
   const type = edFont(font, ED_SERIF);
   const small: CSSProperties = {
     fontFamily: type.fontFamily,
-    fontSize: "max(10px, 1.3cqh)",
+    fontSize: "clamp(9px, 1.3cqh, 12px)",
     letterSpacing: "0.06em",
     fontVariantNumeric: "tabular-nums",
   };
@@ -321,7 +331,7 @@ function OriginkitBaseHairline(props: HairlineProps) {
       <div
         ref={scaleRef}
         aria-hidden="true"
-        style={{ position: "absolute", inset: 0, color: textColor, opacity: 0 }}
+        style={{ position: "absolute", inset: 0, color: textColor, opacity: 1 }}
       >
         <div style={{ ...line, opacity: 0.18 }} />
         <div ref={ruleRef} style={{ ...line, transformOrigin: "0 50%", transform: "scaleX(0)" }} />
@@ -333,7 +343,7 @@ function OriginkitBaseHairline(props: HairlineProps) {
             }}
             style={{
               position: "absolute",
-              top: "calc(50% + 0.9cqh)",
+              top: "calc(50% + max(4px, 0.9cqh))",
               left: `${INSET + (k * (100 - 2 * INSET)) / (TICKS - 1)}cqw`,
               transform: "translateX(-50%)",
               display: "flex",
@@ -346,11 +356,16 @@ function OriginkitBaseHairline(props: HairlineProps) {
             <div
               style={{
                 width: 1,
-                height: k % 5 === 0 ? "1.8cqh" : "0.9cqh",
+                height: k % 5 === 0 ? "max(12px, 1.8cqh)" : "max(6px, 0.9cqh)",
                 background: textColor,
               }}
             />
-            <div style={{ marginTop: "0.9cqh" }}>{k * 10}</div>
+            <div
+              style={{ marginTop: "max(4px, 0.9cqh)" }}
+              className={k % 5 === 0 ? "block" : "hidden sm:block"}
+            >
+              {k * 10}
+            </div>
           </div>
         ))}
         <div
@@ -358,16 +373,16 @@ function OriginkitBaseHairline(props: HairlineProps) {
           style={{
             position: "absolute",
             left: `${INSET}cqw`,
-            bottom: "calc(50% + 1.8cqh)",
+            bottom: "calc(50% + max(8px, 1.8cqh))",
             display: "flex",
             alignItems: "flex-start",
             whiteSpace: "nowrap",
             ...type,
-            fontSize: "14cqh",
+            fontSize: "clamp(32px, min(10cqh, 14cqw), 84px)",
             fontVariantNumeric: "tabular-nums",
           }}
         >
-          <span ref={numRef} />
+          <span ref={numRef}>0</span>
           <span
             style={{
               fontSize: "0.3em",
@@ -385,7 +400,7 @@ function OriginkitBaseHairline(props: HairlineProps) {
 }
 
 const defaultPresetProps: HairlineProps = {
-  minTime: 4,
+  minTime: 2.0,
   font: {
     fontFamily: "Inter",
     fontWeight: 400,

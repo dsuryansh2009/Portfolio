@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import type { CSSProperties } from "react"
+import { markLoaded } from "@/lib/loading-tracker"
 
 /* ------------------------------------------------------------------ *
  *  ClayRobot
@@ -170,7 +171,7 @@ const SKY_AWAY = [-0.151, -0.124, -0.087]
 const SUN = [0.293, 0.227, 0.17]
 
 // Pixel budget and the buffer steps the quality ladder can take.
-const DPR_CAP = 2
+const DPR_CAP = 1
 const PIXEL_BUDGET = 2.6e6
 const LEVELS = [1, 0.85, 0.72, 0.6]
 
@@ -346,6 +347,7 @@ uniform vec4 uArms;     // left (raise, swing), right (raise, swing)
 uniform vec2 uArmExt;   // how far each arm is stretched out, 0..1
 uniform vec4 uBodyBox;  // body box: centre y, half size xyz
 uniform int uSamples;
+uniform int uSteps;
 uniform float uTransparent;
 
 out vec4 fragColor;
@@ -556,7 +558,7 @@ float softShadow(vec3 ro, vec3 rd) {
     // that graze the blended (inexact) parts of this field.
     float t = max(bt.x, 0.03 * uScale);
     float res = 1.0;
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 14; i++) {
         float h = mapC(ro + rd * t);
         res = min(res, uSoft * h / t);
         t += clamp(h, 0.04 * uScale, 0.8 * uScale);
@@ -666,7 +668,7 @@ void main() {
             // the distance while successive spheres overlap, else step
             // back and continue plainly.
             float w = 1.4, lastD = 0.0, step = 0.0;
-            for (int i = 0; i < 96; i++) {
+            for (int i = 0; i < uSteps; i++) {
                 if (i >= steps) break;
                 vec2 dd = sceneD(uW2S * (ro + rd * t), true);
                 float d = dd.x * uScale;
@@ -708,8 +710,11 @@ void main() {
                 ndl = dot(n, uSun);
             }
             // One shadow trace: from the surface if there is one, else
-            // from the floor behind it.
-            bool wantSh = hit ? ndl > 0.03 : tf < 1e8;
+            // from the floor behind it if within range of the robot.
+            vec3 fs = uW2S * pf;
+            vec3 m = clamp(fs, uBoxMin, uBoxMax);
+            float floorDist = distance(fs.xz, m.xz);
+            bool wantSh = hit ? ndl > 0.03 : (tf < 1e8 && floorDist < 1.4);
             float sh = wantSh ? softShadow(hit ? p + n * 0.01 * uScale : pf, uSun) : (hit ? 0.0 : 1.0);
             // Shadow depth lightens the sun's shadow on the robot itself.
             if (hit) sh = mix(1.0, sh, uShDepth);
@@ -740,9 +745,7 @@ void main() {
                 if (s == 0) edge = near < 1.5 || dot(n, -rd) < 0.3;
             } else {
                 if (tf < 1e8) {
-                    vec3 fs = uW2S * pf;
-                    vec3 m = clamp(fs, uBoxMin, uBoxMax);
-                    if (distance(fs.xz, m.xz) < 0.6) {
+                    if (floorDist < 0.6) {
                         float h = 0.3 * uScale;
                         sh *= mix(0.55, 1.0, clamp(mapD(pf + vec3(0.0, h, 0.0)) / h, 0.0, 1.0));
                     }
@@ -1068,7 +1071,7 @@ export default function ClayRobot({
                 "uRes", "uS", "uOff", "uRoll", "uD", "uW2S", "uScale", "uHop", "uSq",
                 "uBody", "uHead", "uEye", "uBoxMin", "uBoxMax", "uSun", "uSunCol", "uSky",
                 "uSkyUp", "uSkySide", "uSkyAway", "uSoft", "uAO", "uBgTop", "uBgBot", "uCurve", "uShadowCol", "uShDepth", "uClay",
-                "uVisor", "uEyeCol", "uGlow", "uSamples", "uWalkX", "uFeet", "uArms", "uArmExt", "uBodyBox", "uTransparent",
+                "uVisor", "uEyeCol", "uGlow", "uSamples", "uSteps", "uWalkX", "uFeet", "uArms", "uArmExt", "uBodyBox", "uTransparent",
             ]
             for (const n of names) uni[n] = gl.getUniformLocation(prog, n)
             timerExt = gl.getExtension("EXT_disjoint_timer_query_webgl2") as typeof timerExt
@@ -1330,7 +1333,11 @@ export default function ClayRobot({
             // The body's box only grows to hold a stretched, raised arm.
             if (extL + extR > 0) g.uniform4f(uni.uBodyBox, 1.48, 3.0, 1.55, 0.9)
             else g.uniform4f(uni.uBodyBox, 1.05, 1.45, 1.12, 0.85)
-            g.uniform1i(uni.uSamples, 5)
+            const isMobile = typeof window !== "undefined" && window.innerWidth < 768
+            const samples = isMobile ? 1 : (level === 0 ? 2 : 1)
+            const maxSteps = isMobile ? 48 : (level === 0 ? 64 : 48)
+            g.uniform1i(uni.uSamples, samples)
+            g.uniform1i(uni.uSteps, maxSteps)
             g.uniform1f(uni.uTransparent, p.transparent ? 1.0 : 0.0)
 
             let query: WebGLQuery | null = null
@@ -1344,6 +1351,9 @@ export default function ClayRobot({
                 queries.push({ q: query, level })
             }
             drawn++
+            if (drawn === 1) {
+                markLoaded("clay_robot")
+            }
         }
 
         function pollTimer(): number {
@@ -1590,6 +1600,7 @@ export default function ClayRobot({
 
         if (!init()) {
             setFailed(true)
+            markLoaded("clay_robot")
             return
         }
 
